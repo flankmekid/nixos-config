@@ -1,5 +1,5 @@
 {
-  description = "dawid legion 5";
+  description = "dawid — Lenovo Legion 5 (Ryzen 7 250 + RTX 5060) — NixOS + Hyprland + Caelestia";
 
   # ── inputs = pinned dependencies (see flake.lock) ──────────────────────────
   inputs = {
@@ -12,11 +12,22 @@
       inputs.nixpkgs.follows = "nixpkgs"; # reuse my nixpkgs, don't fetch a 2nd copy
     };
 
+    # Declarative disk partitioning — makes the LUKS+btrfs layout reproducible
+    # instead of a pile of one-off `cryptsetup`/`mkfs` commands at install time.
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Community hardware quirk modules (AMD CPU tuning, laptop/SSD defaults).
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+
     # Hyprland — use the project's own flake (recommended over the nixpkgs build).
+    # Deliberately NOT following nixpkgs: Hyprland upstream says that breaks
+    # their binary cache, so you'd compile the whole compositor yourself.
     hyprland.url = "github:hyprwm/Hyprland";
 
     # Caelestia shell (the bar/launcher/notifications that runs on top of Hyprland).
-    # NOTE: named `caelestia` so the home-manager import below reads cleanly.
     caelestia = {
       url = "github:caelestia-dots/shell";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -36,23 +47,46 @@
   };
 
   # ── outputs = what this flake builds ───────────────────────────────────────
-  outputs = { self, nixpkgs, home-manager, spicetify-nix, ... }@inputs:
+  outputs =
+    { self
+    , nixpkgs
+    , home-manager
+    , disko
+    , nixos-hardware
+    , spicetify-nix
+    , ...
+    }@inputs:
     let
       system = "x86_64-linux";
-    in {
+      pkgs = nixpkgs.legacyPackages.${system};
+    in
+    {
       # One machine, named `laptop`. Build with:
       #   sudo nixos-rebuild switch --flake .#laptop
       nixosConfigurations.laptop = nixpkgs.lib.nixosSystem {
         inherit system;
 
-        # Make `inputs` and `system` available inside configuration.nix.
+        # Make `inputs` and `system` available inside every module.
         specialArgs = { inherit inputs system; };
 
         modules = [
-          ./configuration.nix
+          ./hosts/laptop
+
+          # Declarative partitioning.
+          disko.nixosModules.disko
+
+          # Hardware quirks. `common/pc/laptop` enables TLP by default, which
+          # would fight power-profiles-daemon, so it is disabled in laptop.nix.
+          nixos-hardware.nixosModules.common-cpu-amd
+          nixos-hardware.nixosModules.common-cpu-amd-pstate
+          nixos-hardware.nixosModules.common-gpu-amd # the Radeon 780M iGPU
+          nixos-hardware.nixosModules.common-pc-laptop
+          nixos-hardware.nixosModules.common-pc-laptop-ssd
+          # NOTE: no nixos-hardware nvidia module here on purpose — PRIME offload
+          # is configured explicitly in modules/nixos/nvidia.nix so there is one
+          # single place that owns the dGPU.
 
           # System-level Spicetify module (provides programs.spicetify).
-          # If this errors, try: spicetify-nix.nixosModules.default
           spicetify-nix.nixosModules.spicetify
 
           # Wire home-manager into the system build so one rebuild does everything.
@@ -60,9 +94,19 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "hm-bak";
             home-manager.extraSpecialArgs = { inherit inputs system; };
+            home-manager.users.dawid = import ./home;
           }
         ];
+      };
+
+      # `nix fmt` to format every .nix file in the repo.
+      formatter.${system} = pkgs.nixfmt-rfc-style;
+
+      # `nix develop` — a shell with the tools for working on this repo itself.
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs; [ nixfmt-rfc-style nix-output-monitor nvd deadnix statix ];
       };
     };
 }

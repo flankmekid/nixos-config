@@ -1,0 +1,11 @@
+# Build results
+result
+result-*
+
+# direnv
+.direnv/
+
+# Editor noise
+*.swp
+*~
+.DS_Store

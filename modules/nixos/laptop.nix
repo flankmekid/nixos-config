@@ -1,0 +1,54 @@
+# ── Legion 5 specifics: power, fans, lid, thermals ────────────────────────────
+{ config, pkgs, lib, ... }:
+{
+  # ── Legion kernel module: exposes fan curves, power modes (Quiet/Balanced/
+  #    Performance), battery conservation mode and the keyboard backlight.
+  #    Gives you the `legion_cli` / `legion_gui` tools from pkgs.lenovo-legion.
+  boot.extraModulePackages = with config.boot.kernelPackages; [ lenovo-legion-module ];
+  boot.kernelModules = [ "lenovo-legion-module" ];
+
+  environment.systemPackages = with pkgs; [
+    lenovo-legion # legion_gui / legion_cli — fan curves + power modes
+    powertop
+    acpi
+  ];
+
+  # ── Power management.
+  # nixos-hardware's common-pc-laptop turns on TLP; we deliberately swap it for
+  # power-profiles-daemon, because the Legion exposes a real ACPI
+  # `platform_profile` and PPD drives it directly (and Caelestia's power widget
+  # talks to PPD, not TLP). Running both at once is a classic way to get
+  # nondeterministic CPU behaviour, so TLP is force-disabled.
+  services.tlp.enable = lib.mkForce false;
+  services.power-profiles-daemon.enable = true;
+
+  # Suspend-then-hibernate is pointless without a swap device, and we use zram,
+  # so plain suspend it is. Closing the lid suspends; on AC it does nothing.
+  services.logind = {
+    lidSwitch = "suspend";
+    lidSwitchExternalPower = "ignore";
+    lidSwitchDocked = "ignore";
+    # Don't let a long build get killed when you log out of a TTY.
+    killUserProcesses = false;
+  };
+
+  # Modern AMD laptops use s2idle rather than S3; make it explicit so a BIOS
+  # update flipping the default doesn't silently wreck standby battery drain.
+  boot.kernelParams = [ "mem_sleep_default=s2idle" ];
+
+  # Thermal management for the AMD SoC.
+  services.thermald.enable = false; # Intel-only; the AMD path is amd-pstate + PPD
+  hardware.acpilight.enable = true; # backlight control without root
+
+  # SSD maintenance.
+  services.fstrim.enable = true;
+
+  # Don't let a completely dead battery corrupt btrfs.
+  services.upower = {
+    enable = true;
+    percentageLow = 15;
+    percentageCritical = 7;
+    percentageAction = 4;
+    criticalPowerAction = "PowerOff";
+  };
+}
