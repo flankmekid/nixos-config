@@ -42,6 +42,13 @@
               # TRIM pass-through to the SSD (small confidentiality tradeoff:
               # it leaks which blocks are unused — fine for a laptop).
               allowDiscards = true;
+
+              # Ask the TPM2 chip for the key at boot instead of prompting.
+              # This does nothing until you actually enrol the key — see
+              # "Enrol the TPM" in the README. Until then (and any time the
+              # TPM refuses), you get the normal passphrase prompt, so this
+              # is safe to have set from the very first boot.
+              crypttabExtraOpts = [ "tpm2-device=auto" "tpm2-measure-pcr=yes" ];
             };
             content = {
               type = "btrfs";

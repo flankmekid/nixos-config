@@ -259,10 +259,19 @@
           on-timeout = "hyprctl dispatch dpms off";
           on-resume = "hyprctl dispatch dpms on";
         }
-        # Suspend only on battery — on AC, let long builds/scans run.
+        # Suspend after 30 min idle, but ONLY on battery — on AC, let long
+        # builds, nmap scans and hashcat runs finish unattended.
+        # hypridle has no notion of power state, so this has to be a script.
         {
           timeout = 1800;
-          on-timeout = "systemctl suspend";
+          on-timeout = toString (pkgs.writeShellScript "idle-suspend-on-battery" ''
+            # Any mains supply that is online means we are plugged in.
+            for ps in /sys/class/power_supply/*; do
+              [ "$(cat "$ps/type" 2>/dev/null)" = "Mains" ] || continue
+              [ "$(cat "$ps/online" 2>/dev/null)" = "1" ] && exit 0
+            done
+            exec systemctl suspend
+          '');
         }
       ];
     };

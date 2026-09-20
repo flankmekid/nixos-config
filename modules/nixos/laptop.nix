@@ -24,9 +24,16 @@
 
   # Suspend-then-hibernate is pointless without a swap device, and we use zram,
   # so plain suspend it is. Closing the lid suspends; on AC it does nothing.
+  # Lid closed always means asleep, on battery or on AC. The alternative
+  # ("ignore" on AC) has a nasty failure mode: logind only evaluates the lid
+  # event at the moment it fires, so closing the lid while plugged in and THEN
+  # unplugging leaves the machine running in your bag.
+  #
+  # Docked is the deliberate exception — when an external monitor is attached
+  # you are closing the lid *in order to* use that monitor.
   services.logind = {
     lidSwitch = "suspend";
-    lidSwitchExternalPower = "ignore";
+    lidSwitchExternalPower = "suspend";
     lidSwitchDocked = "ignore";
     # Don't let a long build get killed when you log out of a TTY.
     killUserProcesses = false;

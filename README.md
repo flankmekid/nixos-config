@@ -4,7 +4,8 @@ NixOS + Hyprland + Caelestia for a Lenovo Legion 5 (AMD Ryzen 7 250 /
 Radeon 780M iGPU + NVIDIA RTX 5060), set up for ASE CSIE (Informatică
 Economică) coursework and security learning (TryHackMe / HackTheBox / CTFs).
 
-- Full-disk encryption (LUKS2) on btrfs, declared with disko
+- Full-disk encryption (LUKS2) on btrfs, declared with disko, unlocked
+  automatically by the TPM so there's no passphrase to type
 - Hybrid graphics in **PRIME offload** mode — the dGPU sleeps until asked
 - One `rebuild` command applies system *and* dotfiles
 
@@ -263,6 +264,54 @@ Remove the USB stick as it restarts.
    ```
 
 7. Connect Wi-Fi: click the bar applet, or `nmcli device wifi connect "SSID" --ask`.
+8. **Enrol the TPM** so you stop typing the LUKS passphrase — see below.
+
+### Enrol the TPM (stop typing the passphrase)
+
+Until you do this, you get a passphrase prompt on every cold boot. After it,
+the laptop unlocks itself and goes straight to the greeter.
+
+First confirm the TPM is present:
+
+```sh
+systemd-analyze has-tpm2          # should print "yes"
+sudo tpm2_getcap properties-fixed | head
+```
+
+Add a **recovery key** first, and write it down somewhere off the laptop. If
+the TPM ever refuses (firmware update, BIOS reset, board replacement) this is
+how you get back in:
+
+```sh
+sudo systemd-cryptenroll --recovery-key /dev/nvme0n1p2
+```
+
+Then seal the key to the TPM:
+
+```sh
+sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0+7 /dev/nvme0n1p2
+```
+
+Use the real partition — `lsblk` shows it as the one holding `cryptroot`
+(the second partition, since partition 1 is the ESP). Reboot to confirm it
+unlocks by itself.
+
+Your original passphrase still works and is **not** removed. Keep it.
+
+> ⚠ **What this does and doesn't protect against.** Because you're running
+> without Secure Boot, sealing to PCR 0+7 stops someone who pulls the SSD out
+> and reads it in another machine — the realistic laptop-theft case. It does
+> *not* stop someone who steals the laptop intact and boots a USB stick: with
+> Secure Boot off, the PCRs look the same to the TPM either way and it will
+> release the key. Passphrase-only is strictly stronger. If you want both
+> convenience and that guarantee, add `lanzaboote`, turn Secure Boot on, and
+> re-enrol against PCR 7.
+>
+> To undo TPM unlocking entirely and go back to typing the passphrase:
+>
+> ```sh
+> sudo systemd-cryptenroll --wipe-slot=tpm2 /dev/nvme0n1p2
+> ```
 
 ---
 
@@ -297,6 +346,11 @@ lscpu | grep -i virtual                       # AMD-V present
 # Services
 systemctl status postgresql
 psql -c 'select version();'
+
+# Encryption + TPM
+lsblk -o NAME,FSTYPE,MOUNTPOINT          # cryptroot present, btrfs on top
+sudo cryptsetup luksDump /dev/nvme0n1p2  # shows enrolled keyslots
+systemd-analyze has-tpm2                 # → yes
 ```
 
 ---
@@ -623,6 +677,52 @@ Lenovo ships BIOS/EC updates through LVFS, and these genuinely work:
 fwupdmgr refresh && fwupdmgr get-updates && fwupdmgr update
 ```
 
+### Sleep and lid behaviour
+
+**Sleep works normally.** What's absent is *hibernation*, which is a different
+thing — see [Deliberately left out](#deliberately-left-out).
+
+| | Suspend (configured) | Hibernate (not configured) |
+| --- | --- | --- |
+| RAM | stays powered | written to disk, machine fully off |
+| Resume | ~1–2 s | ~15–30 s |
+| Battery drain | ~1–3 %/hr (AMD s2idle) | none |
+| Needs swap ≥ RAM | no | yes |
+
+What triggers a suspend:
+
+| Event | Result |
+| --- | --- |
+| Close the lid, on battery | suspend |
+| Close the lid, on AC | suspend |
+| Close the lid with an external monitor attached | **stays awake** — you're closing it to use that monitor |
+| 30 min idle on battery | suspend |
+| 30 min idle on AC | stays awake, so long builds/scans/downloads finish |
+| 4 min idle | screen dims |
+| 5 min idle | screen locks |
+| 7 min idle | display powers off |
+
+Lid behaviour lives in `services.logind` in `modules/nixos/laptop.nix`; the
+idle timers are `services.hypridle` in `home/hyprland.nix`.
+
+Closing the lid on AC suspends deliberately. The alternative (`"ignore"`) is
+a trap: logind evaluates the lid event only when it fires, so closing the lid
+while plugged in and *then* unplugging leaves the machine running in your bag.
+
+To keep it awake for a one-off long job:
+
+```sh
+systemd-inhibit --what=handle-lid-switch:idle --why="hashcat" <command>
+```
+
+If standby drain looks high, confirm the machine is using s2idle rather than
+deep sleep (AMD laptops generally only implement s2idle properly):
+
+```sh
+cat /sys/power/mem_sleep          # [s2idle] should be selected
+journalctl -b -u systemd-suspend
+```
+
 ### Battery
 
 ```sh
@@ -649,6 +749,17 @@ graphics mode, not Discrete.
 The dGPU is runtime-suspended, which is correct and expected. Verify with
 `nvidia-offload nvidia-smi` instead. If *that* fails, check
 `hardware.nvidia.open = true` is set — Blackwell will not work without it.
+
+### It's asking for the passphrase again after TPM enrolment
+
+The TPM refuses when the measurements it sealed against change — a BIOS/EC
+update, a BIOS settings reset, or clearing the TPM will all do it. This is
+the designed behaviour, not a fault. Type your passphrase (or recovery key),
+then re-enrol:
+
+```sh
+sudo systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs=0+7 /dev/nvme0n1p2
+```
 
 ### LUKS passphrase rejected but it's definitely correct
 
@@ -735,12 +846,18 @@ running with `systemctl --user status xdg-desktop-portal-hyprland`.
 
 ## Deliberately left out
 
-- **Hibernation** — there is no swap device (zram only), so it cannot work.
-  To add it: create a swapfile larger than RAM inside the btrfs volume, set
-  `boot.resumeDevice` and the `resume_offset` kernel parameter.
+- **Hibernation** (suspend-to-disk) — **not the same as sleep.** Normal
+  sleep/suspend works fine; see [Sleep and lid behaviour](#sleep-and-lid-behaviour).
+  Hibernation writes all of RAM to disk and powers the machine fully off, so
+  it needs a swap device at least as large as RAM — and this config uses zram
+  (compressed RAM) rather than disk swap. To add it: create a swapfile larger
+  than RAM inside the btrfs volume, set `boot.resumeDevice` and the
+  `resume_offset` kernel parameter.
 - **Secure Boot** — you chose plain systemd-boot. To add it later, bring in
-  the `lanzaboote` flake input and enrol keys in the BIOS. LUKS already
-  protects data at rest; Secure Boot protects against a tampered kernel.
+  the `lanzaboote` flake input and enrol keys in the BIOS. This is the one
+  addition that would meaningfully strengthen the setup: it is what makes
+  TPM auto-unlock safe against a thief booting a USB stick. See the warning
+  under [Enrol the TPM](#enrol-the-tpm-stop-typing-the-passphrase).
 - **Oracle Database** — ready-to-uncomment Docker block in `dev.nix`.
 - **MySQL** — installed, `enable = false`.
 - **JetBrains IDEs** — you picked Neovim + VSCodium. Add `jetbrains.idea-community`

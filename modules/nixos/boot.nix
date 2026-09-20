@@ -18,7 +18,25 @@
 
   # systemd in the initrd — needed to unlock LUKS with a proper console, and
   # it gives you a usable emergency shell when something goes wrong at boot.
+  # It is also what makes TPM2 auto-unlock possible at all.
   boot.initrd.systemd.enable = true;
+
+  # ── TPM2, used to unlock the disk without typing a passphrase.
+  #
+  # ⚠ Security note, because this interacts with the decision to run without
+  # Secure Boot: sealing the LUKS key to the TPM protects you against someone
+  # removing the SSD and reading it in another machine (the realistic theft
+  # case). It does NOT protect against someone stealing the laptop intact and
+  # booting a USB stick — with Secure Boot off, PCR 7 looks the same to the
+  # TPM either way, so it would release the key. If you later want both
+  # convenience and that guarantee, add lanzaboote and re-enrol against PCR 7
+  # with Secure Boot on. Your passphrase always remains as a fallback.
+  security.tpm2 = {
+    enable = true;
+    pkcs11.enable = true;
+    tctiEnvironment.enable = true;
+  };
+  environment.systemPackages = [ pkgs.tpm2-tools ];
 
   # Quiet, flicker-free boot into the Hyprland greeter.
   boot.kernelParams = [ "quiet" "splash" "rd.udev.log_level=3" ];

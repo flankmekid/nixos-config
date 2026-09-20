@@ -43,14 +43,9 @@
     source = "${pkgs.nmap}/bin/nmap";
   };
 
-  # ┌───────────────────────────────────────────────────────────────────────┐
-  # │ NOTE: this is the list most likely to break on first build. Security  │
-  # │ tools get renamed, moved under namespaces or dropped from nixpkgs     │
-  # │ more often than anything else here. If evaluation fails with          │
-  # │ `undefined variable 'foo'`, comment that one line out and check:      │
-  # │     nix search nixpkgs foo                                            │
-  # │ Nothing in this list is load-bearing for the system booting.          │
-  # └───────────────────────────────────────────────────────────────────────┘
+  # ── The core toolkit. Every name below is a long-lived, stable nixpkgs
+  #    attribute, chosen so the first build succeeds without babysitting.
+  #    The churnier tools are in the commented EXTRAS block further down.
   environment.systemPackages = with pkgs; [
     # ── Recon / scanning
     nmap
@@ -65,15 +60,13 @@
     termshark
     arp-scan
     netdiscover
-    enum4linux-ng
     smbmap
     nbtscan
-    snmpcheck
-    ldapvi
+    enum4linux-ng
     onesixtyone
 
     # ── Web
-    burpsuite # the community edition; the workhorse for THM/HTB web boxes
+    burpsuite # community edition; the workhorse for THM/HTB web boxes
     zap
     ffuf
     feroxbuster
@@ -88,26 +81,18 @@
     nuclei
     subfinder
     amass
-    gau
-    waybackurls
-    arjun
 
     # ── Exploitation
     metasploit
     exploitdb # searchsploit
-    sliver # modern C2, for the red-team learning path
     evil-winrm
     impacket # psexec.py, secretsdump.py, GetNPUsers.py … core for AD boxes
-    crackmapexec
     responder
     mitm6
-    bloodhound # AD attack-path graphing
-    bloodhound-py
     kerbrute
-    certipy # AD CS abuse
 
     # ── Password / hash cracking
-    hashcat # will use the RTX 5060 — run it with `nvidia-offload hashcat ...`
+    hashcat # uses the RTX 5060 — already aliased to run offloaded
     hashcat-utils
     john
     hashid
@@ -116,56 +101,94 @@
     medusa
     crunch
     cewl
-    wordlists # provides /run/current-system/sw/share/wordlists incl. rockyou
+    wordlists # provides rockyou.txt — referenced by the tmpfiles rule below
 
     # ── Reversing / binary exploitation / forensics
     ghidra
     radare2
     rizin
-    cutter
     binwalk
     ltrace
     strace
     patchelf
     checksec
-    ropgadget
-    one_gadget
-    gef # GDB Enhanced Features
     foremost
     testdisk
     sleuthkit
-    volatility3
     exiftool
     steghide
-    stegseek
-    zsteg
-    outguess
 
     # ── Crypto / encoding
-    cyberchef
     openssl
-    hash-identifier
-    rsactftool
 
     # ── Wireless (needs a capable adapter; the Legion's internal card may not
     #    support monitor mode — an external Alfa card usually does)
     aircrack-ng
-    wifite2
     kismet
     bettercap
 
-    # ── Privilege escalation helpers (you serve these to the target box)
-    linux-exploit-suggester
-    pspy
-    chisel # port forwarding / pivoting
+    # ── Pivoting / privilege escalation
+    chisel # port forwarding
     ligolo-ng
-
-    # ── Misc
     proxychains-ng
     tor
-    seclists # the wordlist collection everything references
-    gtfobins # offline GTFOBins lookup
+
+    # ── Wordlists
+    seclists # referenced by the tmpfiles rule below
   ];
+
+  # ┌───────────────────────────────────────────────────────────────────────┐
+  # │ EXTRAS — useful, but these attribute names are the ones that actually │
+  # │ churn in nixpkgs (renames, namespace moves, removals). They are left  │
+  # │ commented so your FIRST build succeeds. Add them a few at a time:     │
+  # │                                                                       │
+  # │     nix search nixpkgs <name>      # confirm the current name         │
+  # │     nix-shell -p <name>            # try it without committing        │
+  # │                                                                       │
+  # │ then move the line up into the list above and rebuild.                │
+  # └───────────────────────────────────────────────────────────────────────┘
+  #
+  # environment.systemPackages = with pkgs; [
+  #   # Active Directory
+  #   netexec        # the maintained successor to crackmapexec (which was renamed)
+  #   bloodhound     # AD attack-path graphing
+  #   bloodhound-py
+  #   certipy        # AD CS abuse; may be packaged as certipy-ad
+  #   ldapvi
+  #
+  #   # C2
+  #   sliver
+  #
+  #   # Recon extras
+  #   gau
+  #   waybackurls
+  #   arjun
+  #   snmpcheck
+  #
+  #   # Reversing / forensics extras
+  #   cutter         # Rizin GUI
+  #   gef            # GDB Enhanced Features
+  #   ropgadget      # attribute may be ROPgadget or python3Packages.ropgadget
+  #   one_gadget
+  #   volatility3
+  #
+  #   # Steganography
+  #   stegseek
+  #   zsteg
+  #   outguess
+  #
+  #   # Crypto / CTF helpers
+  #   cyberchef
+  #   rsactftool
+  #   hash-identifier
+  #
+  #   # Privesc enumeration — often easier to just curl these onto the target
+  #   pspy
+  #   linux-exploit-suggester
+  #
+  #   # Wireless
+  #   wifite2
+  # ];
 
   # SecLists and rockyou live in the Nix store; symlink them to the paths every
   # walkthrough assumes, so you can copy-paste commands from writeups.
