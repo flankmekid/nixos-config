@@ -74,11 +74,29 @@ Adding a module: drop a `.nix` file in `modules/nixos/` and add it to the
 
 ### You will need
 
-- A USB stick (≥4 GB) with the **minimal or graphical NixOS ISO**
-  (<https://nixos.org/download>) — either works, minimal is faster
+- A USB stick (≥8 GB) with a **NixOS ISO** (<https://nixos.org/download>),
+  written with [Rufus](https://rufus.ie) or `dd`. Which ISO:
+
+  | | Graphical (GNOME) — **recommended** | Minimal |
+  | --- | --- | --- |
+  | Download | ~3 GB | ~1 GB |
+  | Wi-Fi | applet in the top bar, point and click | `wpa_cli`, by hand |
+  | Reading this guide | Firefox, on the machine itself | need a second device |
+  | Copy-paste commands | yes | retype by hand |
+  | Editing config files | GUI editor or terminal | `nano` in the console |
+
+  The graphical ISO is easier for this install specifically, because you have
+  to paste PCI bus IDs into a config file partway through. Both reach the same
+  result — every command below works on either.
+
 - Ethernet, or your Wi-Fi password
-- **A second device** (phone is fine) to read this from while installing
+- A second device to read this from **if you use the minimal ISO**
 - 40–90 minutes, most of it unattended downloading
+
+> ⚠ **Do not use the graphical installer** (the "Install NixOS" icon on the
+> GNOME desktop). Calamares writes its own `/etc/nixos/configuration.nix` and
+> knows nothing about flakes, disko or this repo. Open a **terminal** and
+> follow the steps below instead.
 
 ### Back up Windows first
 
@@ -110,9 +128,39 @@ drive in a half-hibernated state): `powercfg /h off` in an admin prompt.
 
 ### 1. Boot the installer and get online
 
-Press **F12** at the splash for the boot menu, pick the USB stick.
+Press **F12** at the splash for the boot menu, pick the USB stick. On the
+graphical ISO, wait for the desktop and open a terminal.
 
-Ethernet works with no setup. For Wi-Fi:
+> **If the graphical ISO hangs, freezes on a black screen, or never reaches
+> the desktop** — that is almost certainly `nouveau`, the open-source NVIDIA
+> driver, choking on the RTX 5060. Blackwell is newer than the nouveau in the
+> live image. You do not need a different ISO:
+>
+> 1. Reboot and, at the ISO's boot menu, press **`e`** to edit the entry.
+> 2. Append to the kernel command line:
+>    ```
+>    modprobe.blacklist=nouveau nouveau.modeset=0
+>    ```
+> 3. Press **Enter** to boot.
+>
+> The desktop then runs on the AMD iGPU, which is what this config uses
+> anyway. This affects only the installer — your installed system uses the
+> proper NVIDIA driver configured in `modules/nixos/nvidia.nix`.
+>
+> If it still won't boot, use the minimal ISO; every command below is
+> identical on both.
+
+Ethernet needs no setup at all — plug in and skip ahead.
+
+**Wi-Fi on the graphical ISO** — use the network applet in the top-right, or:
+
+```sh
+nmcli device wifi list
+nmcli device wifi connect "YourNetwork" --ask
+```
+
+**Wi-Fi on the minimal ISO** — there is no NetworkManager here, so drive
+`wpa_supplicant` directly:
 
 ```sh
 sudo systemctl start wpa_supplicant
@@ -122,16 +170,27 @@ wpa_cli
 # > set_network 0 psk "YourPassword"
 # > enable_network 0
 # > quit
+```
+
+Either way, confirm before continuing:
+
+```sh
 ping -c3 nixos.org
 ```
 
 ### 2. Get this repo onto the machine
+
+Git is already on the graphical ISO; `nix-shell -p git` is only needed on the
+minimal one, and is harmless on both.
 
 ```sh
 nix-shell -p git
 git clone https://github.com/<you>/nixos-config
 cd nixos-config
 ```
+
+You'll edit files in steps 3–6. Use `nano <file>` (Ctrl+O saves, Ctrl+X
+quits) — it's present on both ISOs — or a GUI editor on the graphical one.
 
 ### 3. Check the disk name, then partition — ⚠ this erases everything
 
