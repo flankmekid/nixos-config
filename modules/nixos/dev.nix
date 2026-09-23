@@ -19,12 +19,12 @@
       libgcc
       xz
       # X/GUI libs — enough for most prebuilt GUI tools and Electron blobs.
-      xorg.libX11
-      xorg.libXext
-      xorg.libXrender
-      xorg.libXtst
-      xorg.libXi
-      xorg.libxcb
+      libx11
+      libxext
+      libxrender
+      libxtst
+      libxi
+      libxcb
       libxkbcommon
       fontconfig
       freetype
@@ -149,7 +149,7 @@
     zathura # PDF viewer with SyncTeX (jump editor <-> PDF)
 
     # ── Office + documents
-    libreoffice-fresh
+    libreoffice
     hunspell
     hunspellDicts.en_US
     hunspellDicts.ro_RO
@@ -157,7 +157,7 @@
 
     # ── Shell / web / misc LSPs and formatters (used by Neovim and VSCodium)
     nixd
-    nixfmt-rfc-style
+    nixfmt
     lua-language-server
     stylua
     bash-language-server

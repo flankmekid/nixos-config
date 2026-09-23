@@ -3,11 +3,9 @@
 { ... }:
 {
   imports = [
-    # Generated on the NEW laptop. See README — with disko you generate it with
-    #   nixos-generate-config --no-filesystems --root /mnt
-    # so it does NOT fight the disk layout declared in disko.nix.
+    # Copied from /etc/nixos/hardware-configuration.nix after the graphical
+    # install. It declares the disks, so no disko here.
     ./hardware-configuration.nix
-    ./disko.nix
 
     ../../modules/nixos/core.nix
     ../../modules/nixos/boot.nix

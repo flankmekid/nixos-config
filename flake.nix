@@ -12,12 +12,6 @@
       inputs.nixpkgs.follows = "nixpkgs"; # reuse my nixpkgs, don't fetch a 2nd copy
     };
 
-    # Declarative disk partitioning — makes the LUKS+btrfs layout reproducible
-    # instead of a pile of one-off `cryptsetup`/`mkfs` commands at install time.
-    disko = {
-      url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     # Community hardware quirk modules (AMD CPU tuning, laptop/SSD defaults).
     nixos-hardware.url = "github:NixOS/nixos-hardware";
@@ -51,7 +45,6 @@
     { self
     , nixpkgs
     , home-manager
-    , disko
     , nixos-hardware
     , spicetify-nix
     , ...
@@ -71,9 +64,6 @@
 
         modules = [
           ./hosts/laptop
-
-          # Declarative partitioning.
-          disko.nixosModules.disko
 
           # Hardware quirks. `common/pc/laptop` enables TLP by default, which
           # would fight power-profiles-daemon, so it is disabled in laptop.nix.
@@ -102,11 +92,11 @@
       };
 
       # `nix fmt` to format every .nix file in the repo.
-      formatter.${system} = pkgs.nixfmt-rfc-style;
+      formatter.${system} = pkgs.nixfmt;
 
       # `nix develop` — a shell with the tools for working on this repo itself.
       devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [ nixfmt-rfc-style nix-output-monitor nvd deadnix statix ];
+        packages = with pkgs; [ nixfmt nix-output-monitor nvd deadnix statix ];
       };
     };
 }

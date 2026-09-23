@@ -48,9 +48,8 @@
 
   # VSCodium — extensions declared here so the setup is reproducible.
   # LSPs/compilers come from modules/nixos/dev.nix and are found on PATH.
-  programs.vscode = {
+  programs.vscodium = {
     enable = true;
-    package = pkgs.vscodium;
     profiles.default = {
       extensions = with pkgs.vscode-extensions; [
         # Languages
@@ -106,6 +105,7 @@
     };
   };
   home.pointerCursor = {
+    enable = true;
     gtk.enable = true;
     name = "Bibata-Modern-Classic";
     package = pkgs.bibata-cursors;

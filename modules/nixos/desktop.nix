@@ -24,7 +24,7 @@
     enable = true;
     settings.default_session = {
       command = lib.concatStringsSep " " [
-        "${pkgs.greetd.tuigreet}/bin/tuigreet"
+        "${pkgs.tuigreet}/bin/tuigreet"
         "--time"
         "--remember"
         "--remember-user-session"
@@ -68,7 +68,7 @@
   # ── Removable media: auto-mount USB sticks without root.
   services.udisks2.enable = true;
   services.gvfs.enable = true;
-  programs.file-roller.enable = true;
+  environment.systemPackages = [ pkgs.file-roller ];
 
   # ── Fonts. Caelestia wants a Nerd Font + Material symbols; the rest is so
   #    that PDFs, .docx coursework and Romanian diacritics all render right.
@@ -80,7 +80,7 @@
       inter # UI font
       noto-fonts
       noto-fonts-cjk-sans
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       liberation_ttf # metric-compatible Arial/Times/Courier — matters for .docx
       corefonts # actual MS fonts, for documents that demand them
     ];
@@ -101,7 +101,7 @@
   # Dark theme by default across GTK/Qt (Caelestia is a dark shell).
   qt = {
     enable = true;
-    platformTheme = "gtk2";
-    style = "gtk2";
+    platformTheme = "gnome";
+    style = "adwaita-dark";
   };
 }

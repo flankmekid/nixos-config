@@ -38,7 +38,7 @@
 
     # Blackwell needs >= 575. `beta` tracks the newest published branch.
     # If a beta regresses, switch to `.stable` (or pin: see README).
-    package = config.boot.kernelPackages.nvidiaPackages.beta;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
 
     # Mandatory for Wayland.
     modesetting.enable = true;
@@ -68,7 +68,7 @@
       # │ `c1:00.0` → `PCI:193:0:0`  (c1 is HEX 193; the bus number must be   │
       # │ written in DECIMAL, the other two stay as-is).                      │
       # └─────────────────────────────────────────────────────────────────────┘
-      amdgpuBusId = "PCI:193:0:0"; # TODO: verify — often c1:00.0 on AMD Legions
+      amdgpuBusId = "PCI:195:0:0"; # TODO: verify — often c1:00.0 on AMD Legions
       nvidiaBusId = "PCI:1:0:0"; # TODO: verify — usually 01:00.0
     };
   };
@@ -94,7 +94,7 @@
   environment.systemPackages = with pkgs; [
     nvtopPackages.full # per-GPU monitor that shows BOTH the AMD and NVIDIA GPUs
     libva-utils # `vainfo` — check hardware video decode actually works
-    glxinfo # `glxinfo`/`eglinfo` for verifying offload
+    mesa-demos # `glxinfo`/`eglinfo` for verifying offload
     vulkan-tools # `vulkaninfo`
   ];
 }

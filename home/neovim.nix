@@ -47,7 +47,7 @@
 
     # ── Nix
     nixd
-    nixfmt-rfc-style
+    nixfmt
 
     # ── C / C++
     clang-tools # clangd + clang-format
@@ -65,7 +65,7 @@
     # ── Python
     basedpyright
     ruff
-    debugpy
+    python3Packages.debugpy
 
     # ── SQL
     sqlfluff
@@ -80,7 +80,7 @@
     taplo
     marksman
     markdownlint-cli2
-    nodePackages.prettier
+    prettier
 
     # ── Shell
     bash-language-server

@@ -9,10 +9,6 @@
       package = pkgs.qemu_kvm;
       runAsRoot = false; # least privilege; VMs run as the qemu user
       swtpm.enable = true; # virtual TPM — needed to install Windows 11 guests
-      ovmf = {
-        enable = true;
-        packages = [ pkgs.OVMFFull.fd ]; # UEFI + Secure Boot capable firmware
-      };
     };
     onBoot = "ignore"; # don't auto-start VMs; they're heavy
     onShutdown = "shutdown";
@@ -49,7 +45,7 @@
   environment.systemPackages = with pkgs; [
     virt-viewer
     spice-gtk
-    win-virtio # virtio drivers ISO for Windows guests
+    virtio-win # virtio drivers ISO for Windows guests
     docker-compose
     lazydocker
     dive # inspect image layers

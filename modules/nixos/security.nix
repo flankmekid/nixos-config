@@ -86,7 +86,7 @@
     metasploit
     exploitdb # searchsploit
     evil-winrm
-    impacket # psexec.py, secretsdump.py, GetNPUsers.py … core for AD boxes
+    python3Packages.impacket # psexec.py, secretsdump.py, GetNPUsers.py … core for AD boxes
     responder
     mitm6
     kerbrute

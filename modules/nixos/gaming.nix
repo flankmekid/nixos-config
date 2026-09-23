@@ -4,7 +4,7 @@
   programs.steam = {
     enable = true;
     remotePlay.openFirewall = true;
-    localNetworkGameTransfer.openFirewall = true;
+    localNetworkGameTransfers.openFirewall = true;
     # Proton-GE: better compatibility than stock Proton for most titles.
     extraCompatPackages = [ pkgs.proton-ge-bin ];
     gamescopeSession.enable = true;
@@ -47,7 +47,7 @@
   ];
 
   # Raise the file-descriptor limit; Proton/Wine games hit the default.
-  systemd.extraConfig = "DefaultLimitNOFILE=1048576";
+  systemd.settings.Manager.DefaultLimitNOFILE = "1048576";
   security.pam.loginLimits = [
     { domain = "*"; type = "soft"; item = "nofile"; value = "1048576"; }
   ];

@@ -31,12 +31,12 @@
   #
   # Docked is the deliberate exception — when an external monitor is attached
   # you are closing the lid *in order to* use that monitor.
-  services.logind = {
-    lidSwitch = "suspend";
-    lidSwitchExternalPower = "suspend";
-    lidSwitchDocked = "ignore";
-    # Don't let a long build get killed when you log out of a TTY.
-    killUserProcesses = false;
+  services.logind.settings.Login = {
+    HandleLidSwitch = "suspend";
+    HandleLidSwitchExternalPower = "suspend";
+    HandleLidSwitchDocked = "ignore";
+    # Do not kill a long build when you log out of a TTY.
+    KillUserProcesses = false;
   };
 
   # Modern AMD laptops use s2idle rather than S3; make it explicit so a BIOS
