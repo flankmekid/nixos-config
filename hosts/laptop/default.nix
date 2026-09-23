@@ -17,6 +17,7 @@
     ../../modules/nixos/virtualisation.nix
     ../../modules/nixos/gaming.nix
     ../../modules/nixos/apps.nix
+    ../../modules/nixos/packages.nix
   ];
 
   networking.hostName = "laptop";

@@ -1,5 +1,10 @@
 # ── Gaming ────────────────────────────────────────────────────────────────────
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   programs.steam = {
     enable = true;
@@ -39,6 +44,7 @@
     lutris
     heroic # Epic / GOG launcher
     vulkan-tools
+    prismlauncher
 
     # Convenience wrapper: launch Steam entirely on the dGPU. For per-game
     # control instead, put `nvidia-offload %command%` in the game's launch
@@ -51,7 +57,12 @@
   # Raise the file-descriptor limit; Proton/Wine games hit the default.
   systemd.settings.Manager.DefaultLimitNOFILE = "1048576";
   security.pam.loginLimits = [
-    { domain = "*"; type = "soft"; item = "nofile"; value = "1048576"; }
+    {
+      domain = "*";
+      type = "soft";
+      item = "nofile";
+      value = "1048576";
+    }
   ];
 
   # Many games (and Wine) need more mmap regions than the default allows.

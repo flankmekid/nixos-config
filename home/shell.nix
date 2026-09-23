@@ -65,6 +65,58 @@
       # mkcd — make a directory and enter it
       mkcd() { mkdir -p "$1" && cd "$1"; }
 
+      # install <pkg>...    add to modules/nixos/packages.txt, rebuild, commit
+      # uninstall <pkg>...  remove from it, rebuild, commit
+      # A failed rebuild puts the list back. `install -m 755 a b` and other
+      # flag forms still run coreutils install.
+      _pkgs_cfg=~/nixos-config
+      _pkgs_list=~/nixos-config/modules/nixos/packages.txt
+      install() {
+        if (( $# == 0 )) || [[ $1 == -* ]]; then command install "$@"; return; fi
+        local p; local -a added
+        for p in "$@"; do
+          if command grep -qxF -- "$p" $_pkgs_list; then
+            echo "$p is already in packages.txt"; continue
+          fi
+          if ! nix eval --raw --inputs-from $_pkgs_cfg "nixpkgs#$p.name" >/dev/null 2>&1; then
+            echo "No package called '$p'. Try: search $p"; return 1
+          fi
+          echo "$p" >> $_pkgs_list; added+=("$p")
+        done
+        (( $#added )) || return 0
+        if sudo nixos-rebuild switch --flake $_pkgs_cfg#laptop; then
+          git -C $_pkgs_cfg commit -q -m "Install $added" -- $_pkgs_list
+          echo "Installed: $added"
+        else
+          command grep -vxF -f <(print -l -- $added) $_pkgs_list > $_pkgs_list.tmp
+          mv $_pkgs_list.tmp $_pkgs_list
+          echo "Rebuild failed; took $added back out of packages.txt."; return 1
+        fi
+      }
+      uninstall() {
+        if (( $# == 0 )); then echo "usage: uninstall <package>..."; return 1; fi
+        local p; local -a removed
+        for p in "$@"; do
+          if command grep -qxF -- "$p" $_pkgs_list; then
+            removed+=("$p")
+          else
+            echo "$p is not in packages.txt (only packages added with install are)."
+            command grep -rlw --include='*.nix' -- "$p" $_pkgs_cfg/modules $_pkgs_cfg/home \
+              | sed "s|^$_pkgs_cfg/|  It is listed in: |"
+          fi
+        done
+        (( $#removed )) || return 1
+        command grep -vxF -f <(print -l -- $removed) $_pkgs_list > $_pkgs_list.tmp
+        mv $_pkgs_list.tmp $_pkgs_list
+        if sudo nixos-rebuild switch --flake $_pkgs_cfg#laptop; then
+          git -C $_pkgs_cfg commit -q -m "Uninstall $removed" -- $_pkgs_list
+          echo "Uninstalled: $removed"
+        else
+          print -l -- $removed >> $_pkgs_list
+          echo "Rebuild failed; put $removed back in packages.txt."; return 1
+        fi
+      }
+
       # Spin up a scratch dir for an HTB/THM box:  box nibbles
       box() {
         local d=~/ctf/"$1"
@@ -263,6 +315,8 @@
     enable = true;
     enableZshIntegration = true;
   };
+  # `, <program>` runs any program once without installing it: , cowsay hi
+  programs.nix-index-database.comma.enable = true;
 
   home.packages = with pkgs; [
     microfetch # NixOS-only fetch tool, runs in each new terminal (see initContent)

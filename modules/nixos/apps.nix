@@ -1,5 +1,12 @@
 # ── Everyday applications ─────────────────────────────────────────────────────
-{ config, pkgs, lib, inputs, system, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  system,
+  ...
+}:
 let
   spicePkgs = inputs.spicetify-nix.legacyPackages.${system};
 in
@@ -45,6 +52,8 @@ in
     swappy # annotate screenshots — genuinely useful for writeups
     hyprpicker
     libnotify
+    mpv
+    ffmpeg
 
     # Notes / study
     obsidian
