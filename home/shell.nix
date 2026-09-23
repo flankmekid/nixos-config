@@ -56,12 +56,6 @@
     };
 
     initContent = ''
-      # Caelestia's current colour scheme (wallpaper-based) for this terminal.
-      # It updates open terminals itself when the scheme changes.
-      if [[ $TERM == xterm-kitty && -r ~/.local/state/caelestia/sequences.txt ]]; then
-        cat ~/.local/state/caelestia/sequences.txt
-      fi
-
       # Use the dGPU for a one-off command:  gpu blender
       gpu() { nvidia-offload "$@"; }
 
@@ -90,26 +84,25 @@
   };
 
   # Prompt: powerline segments (OS, user, directory, git, language versions,
-  # command duration, time), then ❯ on its own line. Colours come from
-  # Caelestia: it sets the terminal palette from the wallpaper scheme
-  # (16 = primary, 17 = secondary, 18 = tertiary; see initContent above).
+  # command duration, time), then ❯ on its own line. Catppuccin Mocha, cool
+  # tones only; change the hex values in the palette at the bottom.
   programs.starship = {
     enable = true;
     settings = {
       add_newline = true;
       command_timeout = 1000;
-      palette = "caelestia";
+      palette = "catppuccin_cool";
 
       format = lib.concatStrings [
-        "[](red)"
+        "[](user)"
         "$os"
         "$username"
-        "[](bg:peach fg:red)"
+        "[](bg:dir fg:user)"
         "$directory"
-        "[](bg:yellow fg:peach)"
+        "[](bg:git fg:dir)"
         "$git_branch"
         "$git_status"
-        "[](fg:yellow bg:green)"
+        "[](fg:git bg:lang)"
         "$c"
         "$cpp"
         "$rust"
@@ -117,28 +110,28 @@
         "$java"
         "$nodejs"
         "$nix_shell"
-        "[](fg:green bg:sapphire)"
+        "[](fg:lang bg:duration)"
         "$cmd_duration"
-        "[](fg:sapphire bg:lavender)"
+        "[](fg:duration bg:time)"
         "$time"
-        "[ ](fg:lavender)"
+        "[ ](fg:time)"
         "$line_break"
         "$character"
       ];
 
       os = {
         disabled = false;
-        style = "bg:red fg:crust";
+        style = "bg:user fg:ink";
         symbols.NixOS = "";
       };
       username = {
         show_always = true;
-        style_user = "bg:red fg:crust";
-        style_root = "bg:red fg:crust";
+        style_user = "bg:user fg:ink";
+        style_root = "bg:user fg:ink";
         format = "[ $user ]($style)";
       };
       directory = {
-        style = "bg:peach fg:crust";
+        style = "bg:dir fg:ink";
         format = "[ $path ]($style)";
         truncation_length = 3;
         truncation_symbol = "…/";
@@ -150,78 +143,77 @@
       };
       git_branch = {
         symbol = "";
-        style = "bg:yellow";
-        format = "[[ $symbol $branch ](fg:crust bg:yellow)]($style)";
+        style = "bg:git";
+        format = "[[ $symbol $branch ](fg:ink bg:git)]($style)";
       };
       git_status = {
-        style = "bg:yellow";
-        format = "[[($all_status$ahead_behind )](fg:crust bg:yellow)]($style)";
+        style = "bg:git";
+        format = "[[($all_status$ahead_behind )](fg:ink bg:git)]($style)";
       };
       c = {
         symbol = " ";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-        style = "bg:green";
+        format = "[[ $symbol( $version) ](fg:ink bg:lang)]($style)";
+        style = "bg:lang";
       };
       cpp = {
         symbol = " ";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-        style = "bg:green";
+        format = "[[ $symbol( $version) ](fg:ink bg:lang)]($style)";
+        style = "bg:lang";
       };
       rust = {
         symbol = "";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-        style = "bg:green";
+        format = "[[ $symbol( $version) ](fg:ink bg:lang)]($style)";
+        style = "bg:lang";
       };
       python = {
         symbol = "";
-        format = "[[ $symbol( $version)( \\($virtualenv\\)) ](fg:crust bg:green)]($style)";
-        style = "bg:green";
+        format = "[[ $symbol( $version)( \\($virtualenv\\)) ](fg:ink bg:lang)]($style)";
+        style = "bg:lang";
       };
       java = {
         symbol = "";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-        style = "bg:green";
+        format = "[[ $symbol( $version) ](fg:ink bg:lang)]($style)";
+        style = "bg:lang";
       };
       nodejs = {
         symbol = "";
-        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
-        style = "bg:green";
+        format = "[[ $symbol( $version) ](fg:ink bg:lang)]($style)";
+        style = "bg:lang";
       };
       nix_shell = {
         symbol = "";
-        format = "[[ $symbol( $name) ](fg:crust bg:green)]($style)";
-        style = "bg:green";
+        format = "[[ $symbol( $name) ](fg:ink bg:lang)]($style)";
+        style = "bg:lang";
       };
       cmd_duration = {
         min_time = 2000;
-        style = "bg:sapphire";
-        format = "[[  $duration ](fg:crust bg:sapphire)]($style)";
+        style = "bg:duration";
+        format = "[[  $duration ](fg:ink bg:duration)]($style)";
       };
       time = {
         disabled = false;
         time_format = "%R";
-        style = "bg:lavender";
-        format = "[[  $time ](fg:crust bg:lavender)]($style)";
+        style = "bg:time";
+        format = "[[  $time ](fg:ink bg:time)]($style)";
       };
       line_break.disabled = false;
       character = {
         disabled = false;
-        success_symbol = "[❯](bold fg:green)";
+        success_symbol = "[❯](bold fg:user)";
         error_symbol = "[❯](bold fg:error)";
-        vimcmd_symbol = "[❮](bold fg:green)";
+        vimcmd_symbol = "[❮](bold fg:user)";
       };
 
-      # The names are the segment colour names used above. The values are
-      # terminal palette slots Caelestia fills with its current scheme.
-      palettes.caelestia = {
-        red = "16"; # OS + user: primary
-        peach = "17"; # directory: secondary
-        yellow = "18"; # git: tertiary
-        green = "13"; # languages, ❯ on success
-        sapphire = "12"; # command duration
-        lavender = "16"; # time: primary
-        crust = "0"; # text on the segments
-        error = "#ffb4ab"; # ❯ after a failed command
+      # One colour per prompt block; the names are used in the format above.
+      palettes.catppuccin_cool = {
+        user = "#cba6f7"; # OS + user: mauve
+        dir = "#f5c2e7"; # directory: pink
+        git = "#b4befe"; # git: lavender
+        lang = "#89b4fa"; # languages: blue
+        duration = "#74c7ec"; # command duration: sapphire
+        time = "#cba6f7"; # time: mauve
+        ink = "#11111b"; # text on the segments
+        error = "#f38ba8"; # ❯ after a failed command: red
       };
     };
   };
