@@ -72,11 +72,16 @@
         cd "$d"
       }
 
-      # Ctrl+arrow word jumps, Home/End, etc.
-      bindkey "^[[1;5C" forward-word
-      bindkey "^[[1;5D" backward-word
-      bindkey "^[[H" beginning-of-line
-      bindkey "^[[F" end-of-line
+      # Ctrl+arrow word jumps, Home/End, Alt+Backspace deletes a word.
+      # zsh switches to vi insert mode after this file runs (EDITOR is nvim),
+      # so plain `bindkey` would only set the unused emacs keymap.
+      for km in emacs viins; do
+        bindkey -M $km "^[[1;5C" forward-word
+        bindkey -M $km "^[[1;5D" backward-word
+        bindkey -M $km "^[[H" beginning-of-line
+        bindkey -M $km "^[[F" end-of-line
+        bindkey -M $km "^[^?" backward-kill-word
+      done
 
       # System info with the NixOS logo in each new kitty window (not in
       # nested shells or editor terminals).

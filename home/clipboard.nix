@@ -19,6 +19,8 @@
     settings = {
       # Its tray icon has no image in Caelestia's bar.
       tray.enabled = false;
+      # No global shortcut (default Alt + Space); SUPER + V opens the clipboard.
+      global_shortcuts.toggle = "";
       theme.dark.name = "catppuccin-mocha";
     };
   };

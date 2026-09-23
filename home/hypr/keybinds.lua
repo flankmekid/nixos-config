@@ -190,6 +190,8 @@ create_bind(vars.kbAudioSettings, hl.dsp.exec_cmd(vars.audioSettings), nil, "Ope
 -- Utilities
 create_bind(vars.kbScreenshot, hl.dsp.exec_cmd("caelestia screenshot"), locked, "Screenshot")
 create_bind(vars.kbScreenshotFreeze, hl.dsp.global("caelestia:screenshotFreeze"), nil, "Screenshot region (freeze)")
+-- The Copilot key sends SUPER + SHIFT + F23; use it as a second region screenshot key.
+create_bind("SUPER + SHIFT + F23", hl.dsp.global("caelestia:screenshotFreeze"), nil, "Screenshot region (Copilot key)")
 create_bind(vars.kbScreenshotRegion, hl.dsp.global("caelestia:screenshot"), nil, "Screenshot region")
 create_bind(vars.kbRecord, hl.dsp.exec_cmd("caelestia record"), nil, "Record screen")
 create_bind(vars.kbRecordSound, hl.dsp.exec_cmd("caelestia record -s"), nil, "Record screen with sound")
