@@ -30,13 +30,24 @@ in
   programs.ydotool.enable = true;
   users.users.dawid.extraGroups = [ config.programs.ydotool.group ];
 
+  # Thunar is the default file manager (SUPER + E; defaults in home/default.nix).
+  programs.thunar = {
+    enable = true;
+    plugins = with pkgs; [
+      thunar-archive-plugin # right-click extract / compress
+      thunar-volman # auto-mount USB drives
+      thunar-media-tags-plugin
+    ];
+  };
+  programs.xfconf.enable = true; # Thunar saves its settings here
+  services.tumbler.enable = true; # image and video thumbnails
+
   environment.systemPackages = with pkgs; [
     vesktop # Discord client with working Wayland screenshare
     # discord    # the official one, if you ever need voice-activity features
 
     # Files / media
     nautilus
-    thunar
     mpv
     ffmpeg # convert/cut/record audio and video
     imv # lightweight image viewer
@@ -59,6 +70,11 @@ in
     # Notes / study
     obsidian
     anki
+
+    # terminal applications
+    cava
+    cmatrix
+    cowsay
 
     # Comms for online classes. Teams' native Linux client is dead, so this is
     # the PWA wrapper; it works fine for calls and screen share via portals.

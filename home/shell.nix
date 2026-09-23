@@ -59,6 +59,13 @@
     };
 
     initContent = ''
+      # Caelestia's current colour scheme (from the wallpaper) for new kitty
+      # windows. Caelestia recolours already-open terminals itself when the
+      # scheme changes. The prompt keeps its own fixed colours.
+      if [[ $TERM == xterm-kitty && -r ~/.local/state/caelestia/sequences.txt ]]; then
+        command cat ~/.local/state/caelestia/sequences.txt
+      fi
+
       # Use the dGPU for a one-off command:  gpu blender
       gpu() { nvidia-offload "$@"; }
 

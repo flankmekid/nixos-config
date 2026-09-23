@@ -150,7 +150,9 @@
     createDirectories = true;
   };
 
-  # Dark theme for GTK apps so they match Caelestia.
+  # Dark GTK base theme. Caelestia themes GTK apps on top of it: it writes
+  # ~/.config/gtk-{3,4}.0/gtk.css (and thunar.css for Thunar) in the current
+  # scheme colours and updates them when the scheme changes.
   gtk = {
     enable = true;
     theme = {
@@ -160,6 +162,17 @@
     iconTheme = {
       name = "Papirus-Dark";
       package = pkgs.papirus-icon-theme;
+    };
+  };
+
+  # Default apps. Home Manager now owns ~/.config/mimeapps.list; the Zen
+  # module adds the browser entries itself.
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "inode/directory" = "thunar.desktop";
+      "x-scheme-handler/discord" = "vesktop.desktop";
+      "x-scheme-handler/claude-cli" = "claude-code-url-handler.desktop";
     };
   };
   home.pointerCursor = {

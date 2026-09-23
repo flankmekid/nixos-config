@@ -77,7 +77,7 @@ in
         terminal              = "kitty",
         browser               = "zen-beta",
         editor                = "codium",
-        fileExplorer          = "nautilus",
+        fileExplorer          = "thunar", -- SUPER + E
         cursorTheme           = "Bibata-Modern-Classic",
         cursorSize            = 24,
         sleepGestureCmd       = "systemctl suspend",
