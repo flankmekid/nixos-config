@@ -234,6 +234,14 @@ create_bind(
 -- Sleep
 create_bind(vars.kbSleep, hl.dsp.exec_cmd(vars.sleepGestureCmd), locked, "Sleep")
 
+-- Vesktop mute/deafen from anywhere. Vesktop has no global shortcuts, so these
+-- send Discord's own shortcuts (Ctrl+Shift+M / Ctrl+Shift+D) straight to its
+-- window, even when it is unfocused or on its special workspace.
+create_bind("KP_Divide", hl.dsp.send_shortcut({ mods = "CTRL SHIFT", key = "M", window = "class:vesktop" }), nil,
+    "Vesktop: toggle mute")
+create_bind("KP_Multiply", hl.dsp.send_shortcut({ mods = "CTRL SHIFT", key = "D", window = "class:vesktop" }), nil,
+    "Vesktop: toggle deafen")
+
 -- Clipboard and emoji picker
 -- Clipboard history with image previews (Vicinae, home/clipboard.nix).
 -- Escape or clicking away closes it.
