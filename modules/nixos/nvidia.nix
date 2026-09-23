@@ -67,7 +67,23 @@
   # The panel is wired to the AMD iGPU (amdgpu_bl1), but the NVIDIA driver
   # also registers a backlight (nvidia_0) that controls nothing. brightnessctl
   # and Caelestia pick nvidia_0 first, so brightness keys did nothing.
-  boot.kernelParams = [ "nvidia.NVreg_EnableBacklightHandler=0" ];
+  # The open NVIDIA module has no option to turn nvidia_0 off
+  # (NVreg_EnableBacklightHandler is ignored), so brightnessctl is wrapped to
+  # use amdgpu_bl1 when no device or class is given. home/default.nix passes
+  # this wrapper to Caelestia too.
+  nixpkgs.overlays = [
+    (final: prev: {
+      brightnessctl = prev.writeShellScriptBin "brightnessctl" ''
+        for arg in "$@"; do
+          case "$arg" in
+            -d|-d*|--device|--device=*|-c|-c*|--class|--class=*|-l|--list)
+              exec ${prev.brightnessctl}/bin/brightnessctl "$@" ;;
+          esac
+        done
+        exec ${prev.brightnessctl}/bin/brightnessctl --device=amdgpu_bl1 "$@"
+      '';
+    })
+  ];
 
   # Wayland environment. These are session-wide so Electron apps, Firefox/Zen
   # and mpv all pick them up.

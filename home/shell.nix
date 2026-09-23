@@ -74,6 +74,12 @@
       bindkey "^[[1;5D" backward-word
       bindkey "^[[H" beginning-of-line
       bindkey "^[[F" end-of-line
+
+      # System info with the NixOS logo in each new kitty window (not in
+      # nested shells or editor terminals).
+      if [[ $TERM == xterm-kitty && $SHLVL -le 1 && -z $NVIM ]]; then
+        microfetch
+      fi
     '';
   };
 
@@ -126,6 +132,7 @@
   };
 
   home.packages = with pkgs; [
+    microfetch # NixOS-only fetch tool, runs in each new terminal (see initContent)
     eza
     fd
     ripgrep

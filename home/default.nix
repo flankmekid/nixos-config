@@ -36,6 +36,11 @@
 
   programs.caelestia = {
     enable = true;
+    # Use the brightnessctl wrapper from modules/nixos/nvidia.nix, which
+    # targets the real panel backlight (amdgpu_bl1) instead of nvidia_0.
+    package = inputs.caelestia.packages.${system}.with-cli.override {
+      inherit (pkgs) brightnessctl;
+    };
     cli.enable = true;
     systemd.enable = true; # run the shell as a user service on login
     # Mirrors Caelestia's shell.json. Full option list:

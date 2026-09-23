@@ -76,6 +76,10 @@
   networking.networkmanager = {
     enable = true;
     wifi.backend = "iwd"; # noticeably more reliable than wpa_supplicant on modern Intel/MTK/RTL cards
+    # Let NetworkManager autoconnect from its saved (system-wide) profile.
+    # With iwd doing it, the attempts at boot/login/resume were aborted and
+    # wifi only came back after connecting by hand.
+    settings.device."wifi.iwd.autoconnect" = false;
   };
   networking.firewall = {
     enable = true;

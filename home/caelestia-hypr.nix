@@ -27,6 +27,8 @@ let
     cp -r ${inputs.caelestia-dots}/hypr $out
     chmod -R u+w $out
     cp ${execs} $out/hyprland/execs.lua
+    cp ${./hypr/keybinds.lua} $out/hyprland/keybinds.lua
+    cp ${./hypr/gestures.lua} $out/hyprland/gestures.lua
     cat ${hyprmodInclude} >> $out/hyprland.lua
   '';
 
@@ -82,6 +84,10 @@ in
 
         -- SUPER + SHIFT + 1-9/0 moves the window to that workspace.
         kbMoveWinToWs         = "SUPER + SHIFT",
+
+        -- Solid windows (default 0.95). Kitty stays see-through through
+        -- its own background_opacity, which only fades the background.
+        windowOpacity         = 1.0,
     }
   '';
 
@@ -114,20 +120,6 @@ in
 
     hl.env("QT_QPA_PLATFORMTHEME", "gnome")
 
-    -- Launcher: toggle on Super release through IPC, so pressing Super
-    -- again also closes it.
-    hl.unbind("SUPER + SUPER_L")
-    hl.bind(
-        "SUPER + SUPER_L",
-        hl.dsp.exec_cmd("caelestia shell drawers toggle launcher"),
-        { release = true }
-    )
-
-    -- Caelestia's restart binds call `qs`, which is not on PATH here. The
-    -- shell runs as a systemd user service, so restart that instead.
-    hl.unbind("CTRL + SUPER + SHIFT + R")
-    hl.unbind("CTRL + SUPER + ALT + R")
-    hl.bind("CTRL + SUPER + SHIFT + R", hl.dsp.exec_cmd("systemctl --user stop caelestia"), { release = true })
-    hl.bind("CTRL + SUPER + ALT + R", hl.dsp.exec_cmd("systemctl --user restart caelestia"), { release = true })
+    -- Launcher and shell restart binds are in home/hypr/keybinds.lua.
   '';
 }
