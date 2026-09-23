@@ -48,6 +48,7 @@
     # ── Nix
     nixd
     nixfmt
+    statix # linter LazyVim's nix extra runs through nvim-lint
 
     # ── C / C++
     clang-tools # clangd + clang-format

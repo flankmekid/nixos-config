@@ -4,6 +4,8 @@
   # ── Nix daemon settings
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
+    # No "Git tree is dirty" warning when rebuilding with uncommitted edits.
+    warn-dirty = false;
     # Parallelism — the Ryzen 7 250 is 8C/16T, so let Nix actually use it.
     max-jobs = "auto";
     # Deduplicate identical files in the store; saves a lot on a laptop SSD.
