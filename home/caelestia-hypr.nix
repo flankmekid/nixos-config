@@ -118,13 +118,13 @@ in
         input    = {
             kb_layout  = "us,ro",
             kb_variant = ",std",
-            kb_options = "grp:alt_shift_toggle,caps:escape",
+            kb_options = "grp:alt_shift_toggle",
         },
     })
 
     hl.env("QT_QPA_PLATFORMTHEME", "gnome")
 
-    -- Clipboard history (clipse, SUPER + V) opens as a centred popup.
+    -- Clipboard history (clipse, SUPER + SHIFT + V) opens as a centred popup.
     hl.window_rule({
         match  = { class = "clipse" },
         float  = true,
