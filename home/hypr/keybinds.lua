@@ -234,8 +234,10 @@ create_bind(vars.kbSleep, hl.dsp.exec_cmd(vars.sleepGestureCmd), locked, "Sleep"
 
 -- Clipboard and emoji picker
 -- clipse in a floating kitty window (home/clipboard.nix); pressing again closes it.
--- [c]lipse stops pkill matching the sh -c running this command.
-create_bind(vars.kbClipboard, hl.dsp.exec_cmd("pkill -f 'kitty --class [c]lipse' || kitty --class clipse -e clipse"),
+-- -xf matches only the UI, whose whole command line is "clipse", not the
+-- listener or the sh -c running this command.
+create_bind(vars.kbClipboard,
+    hl.dsp.exec_cmd("pkill -xf clipse || kitty --class clipse -o background_opacity=0.97 -e clipse"),
     nil, "Clipboard history")
 create_bind(vars.kbClipboardDel, hl.dsp.exec_cmd("pkill fuzzel || caelestia clipboard -d"), nil,
     "Delete from clipboard history")

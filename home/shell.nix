@@ -56,6 +56,12 @@
     };
 
     initContent = ''
+      # Caelestia's current colour scheme (wallpaper-based) for this terminal.
+      # It updates open terminals itself when the scheme changes.
+      if [[ $TERM == xterm-kitty && -r ~/.local/state/caelestia/sequences.txt ]]; then
+        cat ~/.local/state/caelestia/sequences.txt
+      fi
+
       # Use the dGPU for a one-off command:  gpu blender
       gpu() { nvidia-offload "$@"; }
 
@@ -83,14 +89,16 @@
     '';
   };
 
-  # Prompt: Catppuccin Mocha powerline segments (OS, user, directory, git,
-  # language versions, command duration, time), then ❯ on its own line.
+  # Prompt: powerline segments (OS, user, directory, git, language versions,
+  # command duration, time), then ❯ on its own line. Colours come from
+  # Caelestia: it sets the terminal palette from the wallpaper scheme
+  # (16 = primary, 17 = secondary, 18 = tertiary; see initContent above).
   programs.starship = {
     enable = true;
     settings = {
       add_newline = true;
       command_timeout = 1000;
-      palette = "catppuccin_mocha";
+      palette = "caelestia";
 
       format = lib.concatStrings [
         "[](red)"
@@ -199,37 +207,21 @@
       character = {
         disabled = false;
         success_symbol = "[❯](bold fg:green)";
-        error_symbol = "[❯](bold fg:red)";
+        error_symbol = "[❯](bold fg:error)";
         vimcmd_symbol = "[❮](bold fg:green)";
       };
 
-      palettes.catppuccin_mocha = {
-        rosewater = "#f5e0dc";
-        flamingo = "#f2cdcd";
-        pink = "#f5c2e7";
-        mauve = "#cba6f7";
-        red = "#f38ba8";
-        maroon = "#eba0ac";
-        peach = "#fab387";
-        yellow = "#f9e2af";
-        green = "#a6e3a1";
-        teal = "#94e2d5";
-        sky = "#89dceb";
-        sapphire = "#74c7ec";
-        blue = "#89b4fa";
-        lavender = "#b4befe";
-        text = "#cdd6f4";
-        subtext1 = "#bac2de";
-        subtext0 = "#a6adc8";
-        overlay2 = "#9399b2";
-        overlay1 = "#7f849c";
-        overlay0 = "#6c7086";
-        surface2 = "#585b70";
-        surface1 = "#45475a";
-        surface0 = "#313244";
-        base = "#1e1e2e";
-        mantle = "#181825";
-        crust = "#11111b";
+      # The names are the segment colour names used above. The values are
+      # terminal palette slots Caelestia fills with its current scheme.
+      palettes.caelestia = {
+        red = "16"; # OS + user: primary
+        peach = "17"; # directory: secondary
+        yellow = "18"; # git: tertiary
+        green = "13"; # languages, ❯ on success
+        sapphire = "12"; # command duration
+        lavender = "16"; # time: primary
+        crust = "0"; # text on the segments
+        error = "#ffb4ab"; # ❯ after a failed command
       };
     };
   };
