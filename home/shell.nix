@@ -83,14 +83,154 @@
     '';
   };
 
-  # Fast, informative prompt.
+  # Prompt: Catppuccin Mocha powerline segments (OS, user, directory, git,
+  # language versions, command duration, time), then ❯ on its own line.
   programs.starship = {
     enable = true;
     settings = {
       add_newline = true;
       command_timeout = 1000;
-      nix_shell.format = "[$symbol$name]($style) ";
-      git_status.disabled = false;
+      palette = "catppuccin_mocha";
+
+      format = lib.concatStrings [
+        "[](red)"
+        "$os"
+        "$username"
+        "[](bg:peach fg:red)"
+        "$directory"
+        "[](bg:yellow fg:peach)"
+        "$git_branch"
+        "$git_status"
+        "[](fg:yellow bg:green)"
+        "$c"
+        "$cpp"
+        "$rust"
+        "$python"
+        "$java"
+        "$nodejs"
+        "$nix_shell"
+        "[](fg:green bg:sapphire)"
+        "$cmd_duration"
+        "[](fg:sapphire bg:lavender)"
+        "$time"
+        "[ ](fg:lavender)"
+        "$line_break"
+        "$character"
+      ];
+
+      os = {
+        disabled = false;
+        style = "bg:red fg:crust";
+        symbols.NixOS = "";
+      };
+      username = {
+        show_always = true;
+        style_user = "bg:red fg:crust";
+        style_root = "bg:red fg:crust";
+        format = "[ $user ]($style)";
+      };
+      directory = {
+        style = "bg:peach fg:crust";
+        format = "[ $path ]($style)";
+        truncation_length = 3;
+        truncation_symbol = "…/";
+        substitutions = {
+          "Documents" = "󰈙 ";
+          "Downloads" = " ";
+          "nixos-config" = " nixos-config";
+        };
+      };
+      git_branch = {
+        symbol = "";
+        style = "bg:yellow";
+        format = "[[ $symbol $branch ](fg:crust bg:yellow)]($style)";
+      };
+      git_status = {
+        style = "bg:yellow";
+        format = "[[($all_status$ahead_behind )](fg:crust bg:yellow)]($style)";
+      };
+      c = {
+        symbol = " ";
+        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
+        style = "bg:green";
+      };
+      cpp = {
+        symbol = " ";
+        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
+        style = "bg:green";
+      };
+      rust = {
+        symbol = "";
+        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
+        style = "bg:green";
+      };
+      python = {
+        symbol = "";
+        format = "[[ $symbol( $version)( \\($virtualenv\\)) ](fg:crust bg:green)]($style)";
+        style = "bg:green";
+      };
+      java = {
+        symbol = "";
+        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
+        style = "bg:green";
+      };
+      nodejs = {
+        symbol = "";
+        format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)";
+        style = "bg:green";
+      };
+      nix_shell = {
+        symbol = "";
+        format = "[[ $symbol( $name) ](fg:crust bg:green)]($style)";
+        style = "bg:green";
+      };
+      cmd_duration = {
+        min_time = 2000;
+        style = "bg:sapphire";
+        format = "[[  $duration ](fg:crust bg:sapphire)]($style)";
+      };
+      time = {
+        disabled = false;
+        time_format = "%R";
+        style = "bg:lavender";
+        format = "[[  $time ](fg:crust bg:lavender)]($style)";
+      };
+      line_break.disabled = false;
+      character = {
+        disabled = false;
+        success_symbol = "[❯](bold fg:green)";
+        error_symbol = "[❯](bold fg:red)";
+        vimcmd_symbol = "[❮](bold fg:green)";
+      };
+
+      palettes.catppuccin_mocha = {
+        rosewater = "#f5e0dc";
+        flamingo = "#f2cdcd";
+        pink = "#f5c2e7";
+        mauve = "#cba6f7";
+        red = "#f38ba8";
+        maroon = "#eba0ac";
+        peach = "#fab387";
+        yellow = "#f9e2af";
+        green = "#a6e3a1";
+        teal = "#94e2d5";
+        sky = "#89dceb";
+        sapphire = "#74c7ec";
+        blue = "#89b4fa";
+        lavender = "#b4befe";
+        text = "#cdd6f4";
+        subtext1 = "#bac2de";
+        subtext0 = "#a6adc8";
+        overlay2 = "#9399b2";
+        overlay1 = "#7f849c";
+        overlay0 = "#6c7086";
+        surface2 = "#585b70";
+        surface1 = "#45475a";
+        surface0 = "#313244";
+        base = "#1e1e2e";
+        mantle = "#181825";
+        crust = "#11111b";
+      };
     };
   };
 

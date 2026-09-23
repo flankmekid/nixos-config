@@ -124,6 +124,14 @@ in
 
     hl.env("QT_QPA_PLATFORMTHEME", "gnome")
 
+    -- Clipboard history (clipse, SUPER + V) opens as a centred popup.
+    hl.window_rule({
+        match  = { class = "clipse" },
+        float  = true,
+        size   = "(monitor_w*0.45) (monitor_h*0.6)",
+        center = true,
+    })
+
     -- Launcher and shell restart binds are in home/hypr/keybinds.lua.
   '';
 }

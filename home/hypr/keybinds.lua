@@ -233,7 +233,10 @@ create_bind(
 create_bind(vars.kbSleep, hl.dsp.exec_cmd(vars.sleepGestureCmd), locked, "Sleep")
 
 -- Clipboard and emoji picker
-create_bind(vars.kbClipboard, hl.dsp.exec_cmd("pkill fuzzel || caelestia clipboard"), nil, "Clipboard history")
+-- clipse in a floating kitty window (home/clipboard.nix); pressing again closes it.
+-- [c]lipse stops pkill matching the sh -c running this command.
+create_bind(vars.kbClipboard, hl.dsp.exec_cmd("pkill -f 'kitty --class [c]lipse' || kitty --class clipse -e clipse"),
+    nil, "Clipboard history")
 create_bind(vars.kbClipboardDel, hl.dsp.exec_cmd("pkill fuzzel || caelestia clipboard -d"), nil,
     "Delete from clipboard history")
 create_bind(vars.kbEmoji, hl.dsp.exec_cmd("pkill fuzzel || caelestia emoji -p"), nil, "Emoji picker")

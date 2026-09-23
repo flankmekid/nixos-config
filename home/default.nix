@@ -6,6 +6,7 @@
     inputs.caelestia.homeManagerModules.default # NOTE: homeManagerModules, not homeModules
     ./shell.nix
     ./terminal.nix
+    ./clipboard.nix
     ./neovim.nix
     ./hyprland.nix
     ./caelestia-hypr.nix
