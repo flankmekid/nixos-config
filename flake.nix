@@ -44,6 +44,13 @@
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Prebuilt, weekly-updated database for nix-index / command-not-found, so
+    # `nix-index` never has to be run locally.
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # ── outputs = what this flake builds ───────────────────────────────────────

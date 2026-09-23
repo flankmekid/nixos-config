@@ -4,6 +4,7 @@
   imports = [
     inputs.zen-browser.homeModules.beta # or .twilight for the alpha channel
     inputs.caelestia.homeManagerModules.default # NOTE: homeManagerModules, not homeModules
+    inputs.nix-index-database.homeModules.nix-index # prebuilt command-not-found database
     ./shell.nix
     ./terminal.nix
     ./clipboard.nix

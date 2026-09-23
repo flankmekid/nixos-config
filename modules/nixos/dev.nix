@@ -97,6 +97,14 @@
     pkg-config
     bear # generates compile_commands.json so clangd understands Makefile projects
 
+    # ── Rust. Crates that link system libraries (ALSA, OpenSSL…) need those
+    # in a per-project dev shell: see ~/ariafin/flake.nix for an example.
+    cargo
+    rustc
+    clippy
+    rustfmt
+    rust-analyzer
+
     # ── Java (JDK 21 LTS)
     jdk21
     maven

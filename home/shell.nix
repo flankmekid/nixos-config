@@ -1,7 +1,10 @@
 # ── zsh, prompt, and CLI ergonomics ───────────────────────────────────────────
 { config, pkgs, lib, ... }:
 {
-  home.sessionPath = [ "$HOME/.local/bin" ];
+  home.sessionPath = [
+    "$HOME/.local/bin"
+    "$HOME/.cargo/bin" # `cargo install` puts binaries here
+  ];
   programs.zsh = {
     enable = true;
     autosuggestion.enable = true;
@@ -250,6 +253,7 @@
 
   # `nix-locate libssl.so` — tells you which package provides a missing file.
   # Invaluable when a prebuilt binary complains about a library.
+  # The database comes prebuilt from the nix-index-database flake input.
   programs.nix-index = {
     enable = true;
     enableZshIntegration = true;
