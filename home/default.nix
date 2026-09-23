@@ -8,6 +8,7 @@
     ./terminal.nix
     ./neovim.nix
     ./hyprland.nix
+    ./caelestia-hypr.nix
     ./git.nix
   ];
 
@@ -41,10 +42,40 @@
     #   https://github.com/caelestia-dots/shell
     settings = {
       general.apps.terminal = [ "kitty" ];
-      bar.status.showBattery = true;
-      paths.wallpaperDir = "~/Pictures/wallpapers";
+
+      # Idle handling (replaces hypridle + hyprlock, which stacked a second
+      # lock screen on top of Caelestia's). Timeouts are in seconds.
+      # String actions other than "lock"/"dpms off"/"dpms on" are sent to
+      # Hyprland as dispatches, so shell commands must be lists.
+      general.idle = {
+        lockBeforeSleep = true;
+        inhibitWhenAudio = true; # no dimming/locking while media plays
+        inhibitWhenCharging = false; # per-timeout below instead
+        timeouts = [
+          # Dim first so you get a chance to move the mouse.
+          {
+            timeout = 240;
+            idleAction = [ "brightnessctl" "-s" "set" "10%" ];
+            returnAction = [ "brightnessctl" "-r" ];
+          }
+          { timeout = 300; idleAction = "lock"; }
+          { timeout = 420; idleAction = "dpms off"; returnAction = "dpms on"; }
+          # Suspend after 30 min, but only on battery — on AC, let long
+          # builds, scans and hashcat runs finish unattended.
+          {
+            timeout = 1800;
+            idleAction = [ "systemctl" "suspend" ];
+            inhibitWhenCharging = true;
+          }
+        ];
+      };
     };
   };
+
+  home.packages = with pkgs; [
+    hyprmod # GUI for Hyprland settings; writes ~/.config/hypr/hyprland-gui.lua
+    pwvucontrol # Caelestia's audio settings app (CTRL + ALT + V)
+  ];
 
   # VSCodium — extensions declared here so the setup is reproducible.
   # LSPs/compilers come from modules/nixos/dev.nix and are found on PATH.

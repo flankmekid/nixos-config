@@ -18,6 +18,11 @@ in
     ];
   };
 
+  # ydotool daemon: Caelestia's "paste latest clipboard entry" bind
+  # (CTRL + SHIFT + ALT + V) types text with it. Needs the ydotool group.
+  programs.ydotool.enable = true;
+  users.users.dawid.extraGroups = [ config.programs.ydotool.group ];
+
   environment.systemPackages = with pkgs; [
     vesktop # Discord client with working Wayland screenshare
     # discord    # the official one, if you ever need voice-activity features

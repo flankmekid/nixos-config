@@ -1,6 +1,7 @@
 # ── zsh, prompt, and CLI ergonomics ───────────────────────────────────────────
 { config, pkgs, lib, ... }:
 {
+  home.sessionPath = [ "$HOME/.local/bin" ];
   programs.zsh = {
     enable = true;
     autosuggestion.enable = true;

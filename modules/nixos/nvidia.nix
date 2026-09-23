@@ -57,21 +57,17 @@
         enableOffloadCmd = true; # provides the `nvidia-offload` wrapper script
       };
 
-      # ┌─────────────────────────────────────────────────────────────────────┐
-      # │ TODO(install): THESE TWO IDs ARE PLACEHOLDERS AND ALMOST CERTAINLY  │
-      # │ NEED CHANGING. Wrong values = black screen or no dGPU. On the real  │
-      # │ machine run:                                                        │
-      # │                                                                     │
-      # │   lspci -D | grep -Ei 'vga|3d|display'                              │
-      # │                                                                     │
-      # │ You get lines like `0000:c1:00.0 VGA ... AMD ...`. Convert          │
-      # │ `c1:00.0` → `PCI:193:0:0`  (c1 is HEX 193; the bus number must be   │
-      # │ written in DECIMAL, the other two stay as-is).                      │
-      # └─────────────────────────────────────────────────────────────────────┘
-      amdgpuBusId = "PCI:195:0:0"; # TODO: verify — often c1:00.0 on AMD Legions
-      nvidiaBusId = "PCI:1:0:0"; # TODO: verify — usually 01:00.0
+      # From `lspci -D | grep -Ei 'vga|3d|display'`: the bus number is hex in
+      # lspci and must be written in decimal here (c3 → 195).
+      amdgpuBusId = "PCI:195:0:0"; # 0000:c3:00.0 Radeon 780M (drives eDP-1)
+      nvidiaBusId = "PCI:1:0:0"; # 0000:01:00.0 RTX 5060
     };
   };
+
+  # The panel is wired to the AMD iGPU (amdgpu_bl1), but the NVIDIA driver
+  # also registers a backlight (nvidia_0) that controls nothing. brightnessctl
+  # and Caelestia pick nvidia_0 first, so brightness keys did nothing.
+  boot.kernelParams = [ "nvidia.NVreg_EnableBacklightHandler=0" ];
 
   # Wayland environment. These are session-wide so Electron apps, Firefox/Zen
   # and mpv all pick them up.

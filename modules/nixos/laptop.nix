@@ -22,8 +22,8 @@
   services.tlp.enable = lib.mkForce false;
   services.power-profiles-daemon.enable = true;
 
-  # Suspend-then-hibernate is pointless without a swap device, and we use zram,
-  # so plain suspend it is. Closing the lid suspends; on AC it does nothing.
+  # Plain suspend. Hibernation is possible (hardware-configuration.nix has a
+  # 16G swap partition) but would also need boot.resumeDevice.
   # Lid closed always means asleep, on battery or on AC. The alternative
   # ("ignore" on AC) has a nasty failure mode: logind only evaluates the lid
   # event at the moment it fires, so closing the lid while plugged in and THEN

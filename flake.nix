@@ -27,6 +27,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Caelestia dotfiles: the official Hyprland Lua config for the shell.
+    caelestia-dots = {
+      url = "github:caelestia-dots/caelestia";
+      flake = false;
+    };
+
     # Zen browser (not in nixpkgs — community flake, auto-updated).
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";

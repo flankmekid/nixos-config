@@ -35,7 +35,8 @@
 
   # Let a burst of compilation swap rather than OOM-kill your editor.
   boot.kernel.sysctl = {
-    "vm.swappiness" = 180; # sensible when swap is RAM-backed (zram), not a disk
+    # zram (priority 5) is used before the disk swap partition (priority -2).
+    "vm.swappiness" = 180; # sensible when the first swap is RAM-backed (zram)
     "vm.watermark_boost_factor" = 0;
     "vm.watermark_scale_factor" = 125;
     "vm.page-cluster" = 0;

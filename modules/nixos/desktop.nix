@@ -62,9 +62,6 @@
   services.gnome.gnome-keyring.enable = true; # stores wifi/app secrets
   security.pam.services.greetd.enableGnomeKeyring = true;
 
-  # Unlock the keyring/session properly when you log in via greetd.
-  security.pam.services.hyprlock = { };
-
   # ── Removable media: auto-mount USB sticks without root.
   services.udisks2.enable = true;
   services.gvfs.enable = true;

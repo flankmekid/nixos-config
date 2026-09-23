@@ -80,6 +80,22 @@
         "type": "github"
       }
     },
+    "caelestia-dots": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790078748,
+        "narHash": "sha256-ZvI53bpo0tIrciKaZ4XCxk9zlfTaM5/Bu+PHPNW6E2Y=",
+        "owner": "caelestia-dots",
+        "repo": "caelestia",
+        "rev": "d459e9182ae55ba7eb29fa90781297224911d6bd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "caelestia-dots",
+        "repo": "caelestia",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -587,6 +603,7 @@
     "root": {
       "inputs": {
         "caelestia": "caelestia",
+        "caelestia-dots": "caelestia-dots",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
         "nixos-hardware": "nixos-hardware",
