@@ -12,6 +12,7 @@
     # uwsm owns the session (programs.hyprland.withUWSM at system level), so
     # home-manager must NOT also start hyprland itself.
     systemd.enable = false;
+    configType = "hyprlang";
 
     settings = {
       # ── Monitors
