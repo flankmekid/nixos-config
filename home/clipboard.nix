@@ -1,9 +1,21 @@
 # ── Clipboard history with image previews ────────────────────────────────────
-# clipse runs in a floating kitty window (SUPER + V, see home/hypr/keybinds.lua)
-# and shows images inline with kitty's graphics protocol. Its listener keeps
-# its own history; cliphist still runs for Caelestia's "type latest" bind.
+# SUPER + V:          Vicinae's clipboard history: a launcher-style popup with
+#                     search and a full preview of images. Vicinae keeps its
+#                     own history from when its server (below) starts.
+# SUPER + SHIFT + V:  clipse in a floating kitty window; images show inline via
+#                     kitty's graphics protocol. Its listener keeps its own
+#                     history.
+# Binds are in home/hypr/keybinds.lua.
 { ... }:
 {
+  programs.vicinae = {
+    enable = true;
+    systemd = {
+      enable = true;
+      autoStart = true;
+    };
+  };
+
   services.clipse = {
     enable = true;
     settings = {

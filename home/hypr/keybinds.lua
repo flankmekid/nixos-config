@@ -233,12 +233,16 @@ create_bind(
 create_bind(vars.kbSleep, hl.dsp.exec_cmd(vars.sleepGestureCmd), locked, "Sleep")
 
 -- Clipboard and emoji picker
+-- Clipboard history with image previews (Vicinae, home/clipboard.nix).
+-- Escape or clicking away closes it.
+create_bind(vars.kbClipboard, hl.dsp.exec_cmd("vicinae cmd launch clipboard:history"), nil, "Clipboard history")
+
 -- clipse in a floating kitty window (home/clipboard.nix); pressing again closes it.
 -- -xf matches only the UI, whose whole command line is "clipse", not the
 -- listener or the sh -c running this command.
-create_bind(vars.kbClipboard,
+create_bind("SUPER + SHIFT + V",
     hl.dsp.exec_cmd("pkill -xf clipse || kitty --class clipse -o background_opacity=0.97 -e clipse"),
-    nil, "Clipboard history")
+    nil, "Clipboard history (terminal)")
 create_bind(vars.kbClipboardDel, hl.dsp.exec_cmd("pkill fuzzel || caelestia clipboard -d"), nil,
     "Delete from clipboard history")
 create_bind(vars.kbEmoji, hl.dsp.exec_cmd("pkill fuzzel || caelestia emoji -p"), nil, "Emoji picker")
