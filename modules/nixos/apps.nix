@@ -36,6 +36,7 @@ in
 
     # Files / media
     nautilus
+    thunar
     mpv
     ffmpeg # convert/cut/record audio and video
     imv # lightweight image viewer

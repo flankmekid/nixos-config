@@ -89,6 +89,9 @@ in
         -- SUPER + SHIFT + 1-9/0 moves the window to that workspace.
         kbMoveWinToWs         = "SUPER + SHIFT",
 
+        -- Toggle floating: Caelestia's default plus SUPER + SHIFT + T.
+        kbToggleWindowFloating = { "SUPER + ALT + Space", "SUPER + SHIFT + T" },
+
         -- Solid windows (default 0.95). Kitty stays see-through through
         -- its own background_opacity, which only fades the background.
         windowOpacity         = 1.0,
