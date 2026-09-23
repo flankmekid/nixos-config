@@ -1,1 +1,2 @@
 # Managed by `install` / `uninstall`, see packages.nix. One package per line.
+vlc
