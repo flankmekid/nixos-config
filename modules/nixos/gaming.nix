@@ -3,11 +3,8 @@
 {
   programs.steam = {
     enable = true;
-    # Hyprland does not scale XWayland apps (force_zero_scaling), so Steam
-    # scales its own UI. Panel scale is 1.333; raise this to make it bigger.
-    package = pkgs.steam.override {
-      extraEnv.STEAM_FORCE_DESKTOPUI_SCALING = "1.5";
-    };
+    # Steam's UI scale comes from Xft.dpi, set in home/caelestia-hypr.nix.
+    # STEAM_FORCE_DESKTOPUI_SCALING and -forcedesktopscaling are ignored.
     remotePlay.openFirewall = true;
     localNetworkGameTransfers.openFirewall = true;
     # Proton-GE: better compatibility than stock Proton for most titles.

@@ -42,6 +42,26 @@
       inherit (pkgs) brightnessctl;
     };
     cli.enable = true;
+    # Apps the special workspace keys start, or pull back in if they were
+    # moved out. The defaults point at apps that are not installed here.
+    cli.settings.toggles = {
+      # SUPER + D
+      communication = {
+        discord.enable = false;
+        vesktop = {
+          enable = true;
+          match = [ { class = "vesktop"; } ];
+          command = [ "vesktop" ];
+          move = true;
+        };
+      };
+      # SUPER + M. spicetify-nix already applies the theme to this Spotify.
+      music.spotify.command = [ "spotify" ];
+      # CTRL + SHIFT + Escape
+      sysmon.btop.command = [ "kitty" "--class" "btop" "--title" "btop" "btop" ];
+      # SUPER + R
+      todo.todoist.enable = false;
+    };
     systemd.enable = true; # run the shell as a user service on login
     # Mirrors Caelestia's shell.json. Full option list:
     #   https://github.com/caelestia-dots/shell

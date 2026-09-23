@@ -10,6 +10,10 @@ let
         hl.exec_cmd("wl-paste --type image --watch cliphist store")
         hl.exec_cmd("systemctl --user start hyprpolkitagent")
         hl.exec_cmd("hyprctl setcursor Bibata-Modern-Classic 24")
+        -- XWayland apps are not scaled (force_zero_scaling), so tell them
+        -- the DPI instead. Steam's UI reads it: 144 = 1.5x. Retries until
+        -- XWayland is up.
+        hl.exec_cmd("sh -c 'for i in $(seq 20); do echo Xft.dpi: 144 | ${pkgs.xrdb}/bin/xrdb -merge && break; sleep 0.5; done'")
     end)
   '';
 
