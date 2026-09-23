@@ -30,6 +30,7 @@ in
     # Files / media
     nautilus
     mpv
+    ffmpeg # convert/cut/record audio and video
     imv # lightweight image viewer
     obs-studio # recording coursework demos / CTF writeups
 
