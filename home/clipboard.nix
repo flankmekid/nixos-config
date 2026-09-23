@@ -14,6 +14,13 @@
       enable = true;
       autoStart = true;
     };
+    # Written to ~/.config/vicinae/settings.json, so changes made in
+    # Vicinae's own settings screen do not stick; set them here.
+    settings = {
+      # Its tray icon has no image in Caelestia's bar.
+      tray.enabled = false;
+      theme.dark.name = "catppuccin-mocha";
+    };
   };
 
   services.clipse = {
