@@ -22,6 +22,71 @@
   services.tlp.enable = lib.mkForce false;
   services.power-profiles-daemon.enable = true;
 
+  # ── Fn+Q → PPD sync. Fn+Q is handled by the firmware: it changes the
+  #    lenovo-wmi-gamezone profile (LED: blue = low-power, white = balanced,
+  #    red = performance, AC only) but not amd-pmf, so the combined
+  #    /sys/firmware/acpi/platform_profile reads "custom" and PPD ignores it.
+  #    This forwards each Fn+Q change to PPD, which then sets every driver
+  #    (amd-pmf included) and keeps Caelestia's power widget in sync.
+  #    The other direction (PPD → Fn+Q LED) already works on its own.
+  systemd.services.fnq-profile-sync = {
+    description = "Forward Legion Fn+Q power mode changes to power-profiles-daemon";
+    after = [ "power-profiles-daemon.service" ];
+    requires = [ "power-profiles-daemon.service" ];
+    wantedBy = [ "multi-user.target" ];
+    path = [ config.services.power-profiles-daemon.package ];
+    serviceConfig = {
+      Restart = "always";
+      RestartSec = 5;
+      ExecStart = pkgs.writers.writePython3 "fnq-profile-sync" { doCheck = false; } ''
+        import glob
+        import os
+        import select
+        import subprocess
+        import sys
+
+        # gamezone's names → PPD's. It reports red as "balanced-performance".
+        TO_PPD = {
+            "low-power": "power-saver",
+            "balanced": "balanced",
+            "balanced-performance": "performance",
+            "performance": "performance",
+        }
+
+        path = next((d + "/profile" for d in glob.glob("/sys/class/platform-profile/*")
+                     if open(d + "/name").read().strip() == "lenovo-wmi-gamezone"), None)
+        if path is None:
+            sys.exit("lenovo-wmi-gamezone platform profile not found")
+
+        fd = os.open(path, os.O_RDONLY)
+        poller = select.poll()
+        poller.register(fd, select.POLLPRI | select.POLLERR)
+
+        def read():
+            os.lseek(fd, 0, 0)
+            return os.read(fd, 64).decode().strip()
+
+        # Only react to changes, so PPD's own restore at boot wins.
+        last = read()
+        while True:
+            # sysfs wakes us on a change; the timeout is a fallback in case
+            # the driver doesn't notify.
+            poller.poll(2000)
+            cur = read()
+            if cur == last:
+                continue
+            last = cur
+            want = TO_PPD.get(cur)
+            if want is None:
+                continue
+            ppd = subprocess.run(["powerprofilesctl", "get"],
+                                 capture_output=True, text=True).stdout.strip()
+            if ppd != want:
+                subprocess.run(["powerprofilesctl", "set", want])
+      '';
+    };
+  };
+
   # Plain suspend. Hibernation is possible (hardware-configuration.nix has a
   # 16G swap partition) but would also need boot.resumeDevice.
   # Lid closed always means asleep, on battery or on AC. The alternative

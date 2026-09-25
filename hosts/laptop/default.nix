@@ -16,11 +16,12 @@
     ../../modules/nixos/security.nix
     ../../modules/nixos/virtualisation.nix
     ../../modules/nixos/gaming.nix
+    ../../modules/nixos/ai.nix
     ../../modules/nixos/apps.nix
     ../../modules/nixos/packages.nix
   ];
 
-  networking.hostName = "laptop";
+  networking.hostName = "nixos";
 
   # Set at first install and then LEAVE IT — it is not "the version to upgrade
   # to", it pins state-format defaults so upgrades don't silently migrate data.

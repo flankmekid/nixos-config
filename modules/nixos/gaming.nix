@@ -45,6 +45,9 @@
     heroic # Epic / GOG launcher
     vulkan-tools
     prismlauncher
+    xivlauncher
+    wineWow64Packages.stable # run Windows .exe files (32- and 64-bit)
+    winetricks # install Windows runtimes (vcrun, dotnet, fonts) into a Wine prefix
 
     # Convenience wrapper: launch Steam entirely on the dGPU. For per-game
     # control instead, put `nvidia-offload %command%` in the game's launch
@@ -53,6 +56,23 @@
       exec nvidia-offload ${config.programs.steam.package}/bin/steam "$@"
     '')
   ];
+
+  # Roblox: Sober (native Linux port of the Android player) and Vinegar
+  # (Roblox Studio under Wine). Both are Flathub-only / Flatpak-supported
+  # upstream, so enable Flatpak and install them system-wide after boot.
+  services.flatpak.enable = true;
+  systemd.services.flatpak-roblox = {
+    description = "Install Roblox (Sober) and Roblox Studio (Vinegar) from Flathub";
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    path = [ pkgs.flatpak ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+      flatpak install --system --noninteractive --or-update flathub org.vinegarhq.Sober org.vinegarhq.Vinegar
+    '';
+  };
 
   # Raise the file-descriptor limit; Proton/Wine games hit the default.
   systemd.settings.Manager.DefaultLimitNOFILE = "1048576";

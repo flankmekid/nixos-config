@@ -1,5 +1,10 @@
 # ── Development toolchains for ASE CSIE (Informatică Economică) ───────────────
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   # ── nix-ld: makes dynamically-linked binaries that were NOT built for NixOS
   #    actually run. This is close to essential for you: uni hands out
@@ -35,6 +40,17 @@
       dbus
       expat
       alsa-lib
+      # Playwright's downloaded Chromium (used by Hermes' Local Browser).
+      libxcomposite
+      libxdamage
+      libxfixes
+      libxrandr
+      libxshmfence
+      libgbm
+      libdrm
+      pango
+      cairo
+      atk
     ];
   };
 
@@ -52,10 +68,16 @@
       host  all all ::1/128      trust
     '';
     ensureDatabases = [ "dawid" ];
-    ensureUsers = [{
-      name = "dawid";
-      ensureClauses = { superuser = true; createdb = true; createrole = true; };
-    }];
+    ensureUsers = [
+      {
+        name = "dawid";
+        ensureClauses = {
+          superuser = true;
+          createdb = true;
+          createrole = true;
+        };
+      }
+    ];
   };
 
   # MySQL/MariaDB — off by default because two DB servers idling on a laptop is
@@ -117,25 +139,28 @@
     dotnet-sdk
     omnisharp-roslyn
     netcoredbg # debugger, used by nvim-dap and VSCodium
+    jetbrains.rider
 
     # ── Python + data/stats
-    (python3.withPackages (ps: with ps; [
-      numpy
-      pandas
-      scipy
-      matplotlib
-      seaborn
-      statsmodels
-      scikit-learn
-      jupyterlab
-      ipython
-      requests
-      sqlalchemy
-      psycopg2
-      openpyxl # read/write .xlsx for coursework
-      beautifulsoup4
-      pwntools # CTF exploit scripting — belongs with Python, not the sec module
-    ]))
+    (python3.withPackages (
+      ps: with ps; [
+        numpy
+        pandas
+        scipy
+        matplotlib
+        seaborn
+        statsmodels
+        scikit-learn
+        jupyterlab
+        ipython
+        requests
+        sqlalchemy
+        psycopg2
+        openpyxl # read/write .xlsx for coursework
+        beautifulsoup4
+        pwntools # CTF exploit scripting — belongs with Python, not the sec module
+      ]
+    ))
     uv # fast venv/dependency manager for per-project envs
     ruff # linter + formatter
     basedpyright # type-checking LSP

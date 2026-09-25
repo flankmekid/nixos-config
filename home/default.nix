@@ -36,6 +36,27 @@
     };
   };
 
+  # The module links shell.json into the read-only Nix store, so the shell's
+  # settings UI fails with "failed to save config". Instead, write a real file
+  # and merge the Nix settings into it on each switch: the keys set in
+  # programs.caelestia.settings win, and the UI can change everything else.
+  xdg.configFile."caelestia/shell.json".enable = false;
+  home.activation.caelestiaShellConfig =
+    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      cfg="${config.xdg.configHome}/caelestia/shell.json"
+      nixCfg="${config.xdg.configFile."caelestia/shell.json".source}"
+      run mkdir -p "$(dirname "$cfg")"
+      # Replace the old store symlink, or an unreadable file, with an empty object.
+      if [ -L "$cfg" ] || ! ${pkgs.jq}/bin/jq -e . "$cfg" >/dev/null 2>&1; then
+        run rm -f "$cfg"
+        run sh -c "echo '{}' > \"$cfg\""
+      fi
+      tmp="$(mktemp)"
+      ${pkgs.jq}/bin/jq -s '.[0] * .[1]' "$cfg" "$nixCfg" > "$tmp"
+      run install -m 644 "$tmp" "$cfg"
+      rm -f "$tmp"
+    '';
+
   programs.caelestia = {
     enable = true;
     # Use the brightnessctl wrapper from modules/nixos/nvidia.nix, which
@@ -128,7 +149,16 @@
         catppuccin.catppuccin-vsc
         vscodevim.vim # muscle memory stays consistent with Neovim
       ];
-      userSettings = {
+      # No userSettings here: that would symlink settings.json into the
+      # read-only store. The activation script below copies it instead.
+    };
+  };
+
+  # Writable VSCodium settings.json. Each rebuild resets it to these values,
+  # so settings changed in the UI only last until the next switch.
+  home.activation.vscodiumSettings =
+    let
+      settings = pkgs.writeText "vscodium-settings.json" (builtins.toJSON {
         "editor.fontFamily" = "'JetBrainsMono Nerd Font', monospace";
         "editor.fontLigatures" = true;
         "editor.formatOnSave" = true;
@@ -139,9 +169,14 @@
         "nix.enableLanguageServer" = true;
         "nix.serverPath" = "nixd";
         "terminal.integrated.defaultProfile.linux" = "zsh";
-      };
-    };
-  };
+      });
+      target = "${config.xdg.configHome}/VSCodium/User/settings.json";
+    in
+    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      run mkdir -p "$(dirname ${target})"
+      run rm -f ${target} # drop the old store symlink or last copy
+      run install -m 644 ${settings} ${target}
+    '';
 
   # XDG user dirs — keeps ~/ from becoming a dumping ground.
   xdg.enable = true;
@@ -173,7 +208,25 @@
       "inode/directory" = "thunar.desktop";
       "x-scheme-handler/discord" = "vesktop.desktop";
       "x-scheme-handler/claude-cli" = "claude-code-url-handler.desktop";
+      # Double-click .exe / .msi in Thunar to run them with Wine.
+      "application/x-ms-dos-executable" = "wine.desktop";
+      "application/x-msdownload" = "wine.desktop";
+      "application/vnd.microsoft.portable-executable" = "wine.desktop";
+      "application/x-msi" = "wine.desktop";
     };
+  };
+  xdg.desktopEntries.wine = {
+    name = "Wine Windows Program Loader";
+    exec = "wine start /unix %f";
+    icon = "wine";
+    terminal = false;
+    noDisplay = true;
+    mimeType = [
+      "application/x-ms-dos-executable"
+      "application/x-msdownload"
+      "application/vnd.microsoft.portable-executable"
+      "application/x-msi"
+    ];
   };
   home.pointerCursor = {
     enable = true;

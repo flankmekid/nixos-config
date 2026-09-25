@@ -143,9 +143,14 @@
       done
 
       # System info with the NixOS logo in each new kitty window (not in
-      # nested shells or editor terminals).
+      # nested shells or editor terminals). The logo is 72 columns wide with
+      # the text, so narrower windows get the text only and nothing wraps.
       if [[ $TERM == xterm-kitty && $SHLVL -le 1 && -z $NVIM ]]; then
-        microfetch
+        if (( COLUMNS >= 74 )); then
+          fastfetch
+        else
+          fastfetch --logo none
+        fi
       fi
     '';
   };
@@ -325,8 +330,51 @@
   # `, <program>` runs any program once without installing it: , cowsay hi
   programs.nix-index-database.comma.enable = true;
 
+  # Fetch shown in each new terminal (see initContent). Same fields as the
+  # old microfetch output.
+  programs.fastfetch = {
+    enable = true;
+    settings = {
+      logo = {
+        source = ./nixos-logo.txt; # microfetch's braille logo
+        color = {
+          "1" = "blue";
+          "2" = "cyan";
+        };
+        padding.right = 2;
+      };
+      display = {
+        separator = " │ "; # keys below are padded so this lines up
+        color = {
+          keys = "blue";
+          output = "default";
+        };
+        percent.type = 9; # coloured number, no bar
+      };
+      modules = [
+        {
+          type = "title";
+          color = {
+            user = "yellow";
+            at = "red";
+            host = "green";
+          };
+        }
+        { type = "os"; key = "{#cyan}  {#blue}System     "; format = "{name} {version-id} ({codename})"; }
+        { type = "kernel"; key = "{#cyan}  {#blue}Kernel     "; }
+        { type = "cpu"; key = "{#cyan}  {#blue}CPU        "; format = "{name}"; }
+        { type = "cpu"; key = "{#cyan}  {#blue}Topology   "; format = "{cores-physical} cores, {cores-logical} threads"; }
+        { type = "shell"; key = "{#cyan}  {#blue}Shell      "; format = "{pretty-name}"; }
+        { type = "uptime"; key = "{#cyan}󰅐  {#blue}Uptime     "; }
+        { type = "wm"; key = "{#cyan}󰍹  {#blue}Desktop    "; format = "{pretty-name} (Wayland)"; }
+        { type = "memory"; key = "{#cyan}󰍛  {#blue}Memory     "; }
+        { type = "disk"; key = "{#cyan}󱥎  {#blue}Storage (/)"; folders = "/"; format = "{size-used} / {size-total} ({size-percentage})"; }
+        { type = "colors"; key = "{#cyan}󰏘  {#blue}Colors     "; symbol = "circle"; }
+      ];
+    };
+  };
+
   home.packages = with pkgs; [
-    microfetch # NixOS-only fetch tool, runs in each new terminal (see initContent)
     eza
     fd
     ripgrep

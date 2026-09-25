@@ -3,7 +3,12 @@
 # Scope note: this is an offensive-security *learning* environment aimed at
 # machines you are authorised to attack (THM/HTB boxes, your own VMs, CTFs).
 # Keep it that way.
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   # ── VPN. THM and HTB both hand you an .ovpn file. Connect with:
   #     sudo openvpn --config ~/vpn/thm.ovpn
@@ -16,16 +21,39 @@
   ];
   networking.wireguard.enable = true;
 
+  # ── RTL-SDR (Blog V4) for SDR++. Blacklists the DVB-T TV driver that would
+  #   otherwise grab the dongle, and installs udev rules for the plugdev group.
+  #   The rtl-sdr-blog package provides rtl_test / rtl_eeprom with V4 support.
+  hardware.rtl-sdr = {
+    enable = true;
+    package = pkgs.rtl-sdr-blog;
+  };
+  users.users.dawid.extraGroups = [ "plugdev" ];
+
   # The tun interface the VPN creates must be allowed to carry your reverse
   # shells back. This trusts the VPN interfaces ONLY — not your home wifi.
-  networking.firewall.trustedInterfaces = [ "tun0" "tun1" ];
+  networking.firewall.trustedInterfaces = [
+    "tun0"
+    "tun1"
+  ];
 
   # Common reverse-shell / payload-hosting ports, open ONLY on the VPN.
   # This is what lets `nc -lvnp 4444` and `python -m http.server 8000` actually
   # receive a connection back from a target box.
   networking.firewall.interfaces."tun0" = {
-    allowedTCPPorts = [ 80 443 4444 4445 8000 8080 9001 ];
-    allowedUDPPorts = [ 53 4444 ];
+    allowedTCPPorts = [
+      80
+      443
+      4444
+      4445
+      8000
+      8080
+      9001
+    ];
+    allowedUDPPorts = [
+      53
+      4444
+    ];
   };
 
   # ── Wireshark with the `wireshark` group so you can capture without root.
@@ -47,6 +75,10 @@
   #    attribute, chosen so the first build succeeds without babysitting.
   #    The churnier tools are in the commented EXTRAS block further down.
   environment.systemPackages = with pkgs; [
+
+    # connection
+    openvpn
+
     # ── Recon / scanning
     nmap
     masscan
@@ -64,6 +96,7 @@
     nbtscan
     enum4linux-ng
     onesixtyone
+    sdrpp
 
     # ── Web
     burpsuite # community edition; the workhorse for THM/HTB web boxes
