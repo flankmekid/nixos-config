@@ -61,9 +61,24 @@
     enable = true;
     # Use the brightnessctl wrapper from modules/nixos/nvidia.nix, which
     # targets the real panel backlight (amdgpu_bl1) instead of nvidia_0.
-    package = inputs.caelestia.packages.${system}.with-cli.override {
-      inherit (pkgs) brightnessctl;
-    };
+    # The bar clock and distro logo use the tertiary colour upstream; switch
+    # them to primary so they match the workspace indicator and window title.
+    package =
+      (inputs.caelestia.packages.${system}.with-cli.override {
+        inherit (pkgs) brightnessctl;
+      }).overrideAttrs
+        (old: {
+          postPatch = (old.postPatch or "") + ''
+            substituteInPlace modules/bar/components/Clock.qml \
+              --replace-fail "Colours.palette.m3tertiary" "Colours.palette.m3primary"
+            substituteInPlace modules/bar/components/OsIcon.qml \
+              --replace-fail "Colours.palette.m3tertiary" "Colours.palette.m3primary"
+            # Plain circles instead of the M3 cookie/gem/burst shapes on the
+            # lock screen and dashboard (incl. pfp mask and perf usage blob).
+            grep -rlZ 'MaterialShape\.' modules/lock modules/dashboard components/widgets/CoverArt.qml \
+              | xargs -0 sed -i -E 's/MaterialShape\.[A-Z][A-Za-z0-9]*/MaterialShape.Circle/g'
+          '';
+        });
     cli.enable = true;
     # Apps the special workspace keys start, or pull back in if they were
     # moved out. The defaults point at apps that are not installed here.
@@ -123,6 +138,18 @@
   home.packages = with pkgs; [
     hyprmod # GUI for Hyprland settings; writes ~/.config/hypr/hyprland-gui.lua
     pwvucontrol # Caelestia's audio settings app (CTRL + ALT + V)
+    bibata-cursors # Extra cursor themes to pick from in HyprMod
+    # .flp has no registered MIME type, so file managers show it as
+    # "Unknown". As a package, Home Manager adds it to the MIME database.
+    (writeTextDir "share/mime/packages/x-flstudio-project.xml" ''
+      <?xml version="1.0" encoding="UTF-8"?>
+      <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+        <mime-type type="application/x-flstudio-project">
+          <comment>FL Studio project</comment>
+          <glob pattern="*.flp"/>
+        </mime-type>
+      </mime-info>
+    '')
   ];
 
   # VSCodium — extensions declared here so the setup is reproducible.
@@ -191,8 +218,10 @@
   gtk = {
     enable = true;
     theme = {
-      name = "Adwaita-dark";
-      package = pkgs.gnome-themes-extra;
+      # Caelestia sets the gsettings gtk-theme to adw-gtk3-dark, so it must be
+      # installed or GTK apps that read gsettings (LibreOffice) fall back to light.
+      name = "adw-gtk3-dark";
+      package = pkgs.adw-gtk3;
     };
     iconTheme = {
       name = "Papirus-Dark";
@@ -213,6 +242,8 @@
       "application/x-msdownload" = "wine.desktop";
       "application/vnd.microsoft.portable-executable" = "wine.desktop";
       "application/x-msi" = "wine.desktop";
+      "application/x-flstudio-project" = "fl-studio.desktop";
+      "application/pdf" = "org.pwmt.zathura-pdf-mupdf.desktop";
     };
   };
   xdg.desktopEntries.wine = {
@@ -228,12 +259,55 @@
       "application/x-msi"
     ];
   };
+  # FL Studio runs in the "FL Studio" Bottles bottle (Flatpak) on the
+  # DAW-GE-Proton runner. Files are passed as Z:\ paths, since FL64.exe
+  # doesn't understand Unix paths.
+  xdg.desktopEntries.fl-studio = let
+    launch = pkgs.writeShellScript "fl-studio" ''
+      args=()
+      for f in "$@"; do
+        args+=("Z:$(${pkgs.coreutils}/bin/realpath "$f" | ${pkgs.gnused}/bin/sed 's|/|\\|g')")
+      done
+      exec ${pkgs.flatpak}/bin/flatpak run --command=bottles-cli com.usebottles.bottles \
+        run -b "FL Studio" -p "FL Studio 2026" -- "''${args[@]}"
+    '';
+  in {
+    name = "FL Studio 2026";
+    genericName = "Digital Audio Workstation";
+    exec = "${launch} %F";
+    # Absolute path: Caelestia doesn't resolve hicolor icons by name.
+    icon = "${config.home.homeDirectory}/.local/share/icons/hicolor/256x256/apps/fl-studio.png";
+    terminal = false;
+    categories = [ "AudioVideo" "Audio" ];
+    mimeType = [ "application/x-flstudio-project" ];
+    settings.StartupWMClass = "steam_proton";
+  };
+  # Office web apps (ASE licence is A1 = web-only) in their own Chromium
+  # app windows. One shared profile, so the Microsoft login is kept.
+  xdg.desktopEntries.excel-web = {
+    name = "Excel";
+    exec = "${pkgs.chromium}/bin/chromium --user-data-dir=${config.home.homeDirectory}/.local/share/office-web --app=https://excel.cloud.microsoft/";
+    icon = "${./icons/excel.svg}";
+    terminal = false;
+    categories = [ "Office" ];
+  };
+  xdg.desktopEntries.powerpoint-web = {
+    name = "PowerPoint";
+    exec = "${pkgs.chromium}/bin/chromium --user-data-dir=${config.home.homeDirectory}/.local/share/office-web --app=https://powerpoint.cloud.microsoft/";
+    icon = "${./icons/powerpoint.svg}";
+    terminal = false;
+    categories = [ "Office" ];
+  };
   home.pointerCursor = {
     enable = true;
     gtk.enable = true;
-    name = "Bibata-Modern-Classic";
-    package = pkgs.bibata-cursors;
-    size = 24;
+    name = "Asahina-Mafuyu";
+    # Converted from the Windows .ani pack with win2xcur.
+    package = pkgs.runCommand "asahina-mafuyu-cursor" { } ''
+      mkdir -p $out/share/icons
+      cp -r ${./cursors/Asahina-Mafuyu} $out/share/icons/Asahina-Mafuyu
+    '';
+    size = 38;
   };
 
   # Scratch directories you will use constantly.

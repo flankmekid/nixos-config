@@ -22,6 +22,17 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Real tabs in C/C++, matching ~/.clang-format (see home/neovim.nix).
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup,
+  pattern = { "c", "cpp" },
+  callback = function()
+    vim.opt_local.expandtab = false
+    vim.opt_local.tabstop = 4
+    vim.opt_local.shiftwidth = 4
+  end,
+})
+
 -- Treat common CTF/tooling files as the right filetype.
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
   group = augroup,

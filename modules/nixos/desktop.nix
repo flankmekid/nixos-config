@@ -80,6 +80,7 @@
       noto-fonts-color-emoji
       liberation_ttf # metric-compatible Arial/Times/Courier — matters for .docx
       corefonts # actual MS fonts, for documents that demand them
+      paratype-pt-sans # PT Sans / PT Sans Caption / PT Sans Narrow
     ];
     fontconfig = {
       defaultFonts = {

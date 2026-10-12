@@ -118,6 +118,8 @@
     ninja
     pkg-config
     bear # generates compile_commands.json so clangd understands Makefile projects
+    raylib # game/graphics library; made visible to the compiler by the sessionVariables below
+    pipx # isolated installs of Python CLI apps (pip itself is per-project on NixOS)
 
     # ── Rust. Crates that link system libraries (ALSA, OpenSSL…) need those
     # in a per-project dev shell: see ~/ariafin/flake.nix for an example.
@@ -132,6 +134,7 @@
     maven
     gradle
     jdt-language-server
+    jetbrains.idea
 
     # ── C# / .NET
     # `dotnet-sdk` tracks the current default. To pin an LTS your course wants,
@@ -228,4 +231,11 @@
   # Stop .NET phoning home and looking for a global SDK install.
   environment.sessionVariables.DOTNET_CLI_TELEMETRY_OPTOUT = "1";
   environment.sessionVariables.DOTNET_ROOT = "${pkgs.dotnet-sdk}/share/dotnet";
+
+  # raylib, usable globally: NixOS has no /usr/include, so point gcc/clang and
+  # pkg-config straight at its store path. `g++ main.cpp -lraylib` then just
+  # works; the ld wrapper bakes the rpath in, so the binary runs too.
+  environment.sessionVariables.CPATH = "${pkgs.raylib}/include";
+  environment.sessionVariables.LIBRARY_PATH = "${pkgs.raylib}/lib";
+  environment.sessionVariables.PKG_CONFIG_PATH = "${pkgs.raylib}/lib/pkgconfig";
 }

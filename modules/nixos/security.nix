@@ -21,6 +21,18 @@
   ];
   networking.wireguard.enable = true;
 
+  # ── Mullvad VPN (daemon + GUI). Log in once with `mullvad account login`,
+  #   then `mullvad connect` or use the tray app. Also turns on
+  #   systemd-resolved, which Mullvad uses to push its DNS.
+  #   Note: while Mullvad is connected its firewall blocks non-Mullvad traffic,
+  #   so disconnect it (or enable LAN/split tunnel) before an HTB/THM openvpn.
+  services.mullvad-vpn = {
+    enable = true;
+    gui.enable = true;
+  };
+  # Strict reverse-path filtering drops Mullvad's WireGuard replies.
+  networking.firewall.checkReversePath = "loose";
+
   # ── RTL-SDR (Blog V4) for SDR++. Blacklists the DVB-T TV driver that would
   #   otherwise grab the dongle, and installs udev rules for the plugdev group.
   #   The rtl-sdr-blog package provides rtl_test / rtl_eeprom with V4 support.

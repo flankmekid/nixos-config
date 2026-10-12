@@ -6,6 +6,10 @@
   #    Gives you the `legion_cli` / `legion_gui` tools from pkgs.lenovo-legion.
   boot.extraModulePackages = with config.boot.kernelPackages; [ lenovo-legion-module ];
   boot.kernelModules = [ "lenovo-legion-module" ];
+  # legion_laptop's legion_wmi also claims the gamezone WMI device
+  # (887B54E3-…). Whichever module loads first wins, so load the in-tree
+  # lenovo_wmi_gamezone first — fnq-profile-sync below needs its profile.
+  boot.extraModprobeConfig = "softdep legion_laptop pre: lenovo_wmi_gamezone";
 
   environment.systemPackages = with pkgs; [
     lenovo-legion # legion_gui / legion_cli — fan curves + power modes
@@ -33,7 +37,9 @@
     description = "Forward Legion Fn+Q power mode changes to power-profiles-daemon";
     after = [ "power-profiles-daemon.service" ];
     requires = [ "power-profiles-daemon.service" ];
-    wantedBy = [ "multi-user.target" ];
+    # PPD itself is ordered after multi-user.target, so hanging off
+    # multi-user.target is an ordering cycle and systemd drops this job at boot.
+    wantedBy = [ "graphical.target" ];
     path = [ config.services.power-profiles-daemon.package ];
     serviceConfig = {
       Restart = "always";

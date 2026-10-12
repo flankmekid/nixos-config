@@ -1,9 +1,17 @@
 # ── Nix itself, locale, users, networking ─────────────────────────────────────
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 {
   # ── Nix daemon settings
   nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     # No "Git tree is dirty" warning when rebuilding with uncommitted edits.
     warn-dirty = false;
     # Parallelism — the Ryzen 7 250 is 8C/16T, so let Nix actually use it.
@@ -11,7 +19,10 @@
     # Deduplicate identical files in the store; saves a lot on a laptop SSD.
     auto-optimise-store = true;
     # Your user can use the daemon without sudo for e.g. `nix build`.
-    trusted-users = [ "root" "dawid" ];
+    trusted-users = [
+      "root"
+      "dawid"
+    ];
     # Binary caches. Hyprland's own cache means you don't compile the compositor.
     substituters = [
       "https://cache.nixos.org"
@@ -65,13 +76,13 @@
     "ro_RO.UTF-8/UTF-8"
   ];
 
-  # US + Romanian layouts; toggle with both Alt keys. Hyprland reads this too
+  # Romanian (Programmers) = US layout + diacritics on Right Alt. Hyprland reads this too
   # (see home/hyprland.nix, which mirrors it for the Wayland session).
   console.keyMap = "us";
   services.xserver.xkb = {
-    layout = "us,ro";
-    variant = ",std";
-    options = "grp:alt_shift_toggle,caps:escape";
+    layout = "ro";
+    variant = "";
+    options = "caps:escape";
   };
 
   # ── Networking
@@ -137,7 +148,10 @@
   # ── Printing + scanning (you will need this for uni at some point)
   services.printing = {
     enable = true;
-    drivers = with pkgs; [ gutenprint hplip ];
+    drivers = with pkgs; [
+      gutenprint
+      hplip
+    ];
   };
   hardware.sane.enable = true;
 
@@ -170,5 +184,6 @@
     usbutils
     lm_sensors
     smartmontools
+    paratype-pt-sans
   ];
 }

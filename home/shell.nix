@@ -61,7 +61,7 @@
     initContent = ''
       # Caelestia's current colour scheme (from the wallpaper) for new kitty
       # windows. Caelestia recolours already-open terminals itself when the
-      # scheme changes. The prompt keeps its own fixed colours.
+      # scheme changes. The starship prompt uses the same palette slots.
       if [[ $TERM == xterm-kitty && -r ~/.local/state/caelestia/sequences.txt ]]; then
         command cat ~/.local/state/caelestia/sequences.txt
       fi
@@ -131,6 +131,33 @@
         cd "$d"
       }
 
+      # Point a box's hostname at its IP:  addhost 10.129.235.182 unika.htb
+      # /etc/hosts is a Nix store symlink, so this swaps in a writable copy
+      # (the next rebuild restores it). Old lines for the same names go first,
+      # since the IP changes on every spawn.
+      addhost() {
+        if (( $# < 2 )); then echo "usage: addhost <ip> <hostname>..."; return 1; fi
+        local ip=$1 h; shift
+        # IPv4 (octets <= 255) or IPv6
+        local ipre='^((25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]?[0-9])$|^[0-9A-Fa-f]*:[0-9A-Fa-f:.]*$'
+        if ! [[ $ip =~ $ipre ]]; then
+          echo "addhost: '$ip' is not an IP address (usage: addhost <ip> <hostname>...)"; return 1
+        fi
+        for h in "$@"; do
+          if [[ $h =~ $ipre || ! $h =~ '^[A-Za-z0-9_]([A-Za-z0-9._-]*[A-Za-z0-9])?$' ]]; then
+            echo "addhost: '$h' is not a hostname (usage: addhost <ip> <hostname>...)"; return 1
+          fi
+        done
+        if [[ -L /etc/hosts ]]; then
+          sudo cp --remove-destination "$(readlink -f /etc/hosts)" /etc/hosts || return 1
+        fi
+        for h in "$@"; do
+          sudo sed -i "/[[:space:]]''${h//./\\.}\([[:space:]]\|\$\)/d" /etc/hosts
+        done
+        echo "$ip $*" | sudo tee -a /etc/hosts >/dev/null
+        getent hosts "$@"
+      }
+
       # Ctrl+arrow word jumps, Home/End, Alt+Backspace deletes a word.
       # zsh switches to vi insert mode after this file runs (EDITOR is nvim),
       # so plain `bindkey` would only set the unused emacs keymap.
@@ -156,14 +183,14 @@
   };
 
   # Prompt: powerline segments (OS, user, directory, git, language versions,
-  # command duration, time), then ❯ on its own line. Catppuccin Mocha, cool
-  # tones only; change the hex values in the palette at the bottom.
+  # command duration, time), then ❯ on its own line. Colours follow the
+  # Caelestia wallpaper scheme; see the palette at the bottom.
   programs.starship = {
     enable = true;
     settings = {
       add_newline = true;
       command_timeout = 1000;
-      palette = "catppuccin_cool";
+      palette = "caelestia";
 
       format = lib.concatStrings [
         "[](user)"
@@ -277,15 +304,19 @@
       };
 
       # One colour per prompt block; the names are used in the format above.
-      palettes.catppuccin_cool = {
-        user = "#cba6f7"; # OS + user: mauve
-        dir = "#f5c2e7"; # directory: pink
-        git = "#b4befe"; # git: lavender
-        lang = "#89b4fa"; # languages: blue
-        duration = "#74c7ec"; # command duration: sapphire
-        time = "#cba6f7"; # time: mauve
-        ink = "#11111b"; # text on the segments
-        error = "#f38ba8"; # ❯ after a failed command: red
+      # Numbers are terminal palette slots, not fixed colours: Caelestia
+      # rewrites slots 0-18 in every open terminal when the wallpaper scheme
+      # changes (16/17/18 = primary/secondary/tertiary), so the prompt,
+      # including ones already on screen, recolours along with it.
+      palettes.caelestia = {
+        user = "16"; # OS + user: primary
+        dir = "18"; # directory: tertiary
+        git = "17"; # git: secondary
+        lang = "12"; # languages: bright blue
+        duration = "14"; # command duration: bright cyan
+        time = "16"; # time: primary
+        ink = "0"; # text on the segments
+        error = "1"; # ❯ after a failed command: red
       };
     };
   };
@@ -306,7 +337,7 @@
 
   programs.bat = {
     enable = true;
-    config.theme = "Catppuccin-mocha";
+    config.theme = "Catppuccin Mocha";
   };
 
   programs.btop.enable = true;

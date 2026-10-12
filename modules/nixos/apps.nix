@@ -43,8 +43,11 @@ in
   services.tumbler.enable = true; # image and video thumbnails
 
   environment.systemPackages = with pkgs; [
+    anki
     vesktop # Discord client with working Wayland screenshare
     # discord    # the official one, if you ever need voice-activity features
+
+    qbittorrent
 
     # Files / media
     nautilus
@@ -52,6 +55,7 @@ in
     ffmpeg # convert/cut/record audio and video
     imv # lightweight image viewer
     obs-studio # recording coursework demos / CTF writeups
+    lmstudio
 
     # Terminal-adjacent utilities Caelestia and Hyprland expect
     kitty
@@ -70,11 +74,16 @@ in
     # Notes / study
     obsidian
     anki
+    zotero
+    zathura
+    qalculate-qt
+    pavucontrol
 
     # terminal applications
     cava
     cmatrix
     cowsay
+    qdirstat
 
     # Comms for online classes. Teams' native Linux client is dead, so this is
     # the PWA wrapper; it works fine for calls and screen share via portals.

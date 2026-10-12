@@ -5,11 +5,18 @@ let
   # The Arch start commands do not work on NixOS. This file replaces them.
   # The Caelestia shell starts from its systemd user service, not from here.
   execs = pkgs.writeText "execs.lua" ''
+    -- Apply the cursor from XCURSOR_THEME/XCURSOR_SIZE, so the value set in
+    -- HyprMod (hyprland-gui.lua) wins, and again whenever the config reloads.
+    local function apply_cursor()
+        hl.exec_cmd([[sh -c 'hyprctl setcursor "$XCURSOR_THEME" "$XCURSOR_SIZE"']])
+    end
+    hl.on("config.reloaded", apply_cursor)
+
     hl.on("hyprland.start", function()
+        apply_cursor()
         hl.exec_cmd("wl-paste --type text --watch cliphist store")
         hl.exec_cmd("wl-paste --type image --watch cliphist store")
         hl.exec_cmd("systemctl --user start hyprpolkitagent")
-        hl.exec_cmd("hyprctl setcursor Bibata-Modern-Classic 24")
         -- XWayland apps are not scaled (force_zero_scaling), so tell them
         -- the DPI instead. Steam's UI reads it: 144 = 1.5x. Retries until
         -- XWayland is up.
@@ -78,8 +85,8 @@ in
         browser               = "zen-beta",
         editor                = "codium",
         fileExplorer          = "thunar", -- SUPER + E
-        cursorTheme           = "Bibata-Modern-Classic",
-        cursorSize            = 24,
+        cursorTheme           = "Asahina-Mafuyu",
+        cursorSize            = 38,
         sleepGestureCmd       = "systemctl suspend",
 
         -- 3-finger horizontal swipe changes workspace. 3-finger up/down
@@ -119,9 +126,11 @@ in
         general  = { allow_tearing = true },
 
         input    = {
-            kb_layout  = "us,ro",
-            kb_variant = ",std",
-            kb_options = "grp:alt_shift_toggle",
+            -- Romanian (Programmers): plain US layout, plus diacritics
+            -- on Right Alt: ă=a  â=q  î=i  ș=s  ț=t (add Shift for capitals).
+            kb_layout  = "ro",
+            kb_variant = "",
+            kb_options = "",
         },
     })
 
@@ -133,6 +142,15 @@ in
         float  = true,
         size   = "(monitor_w*0.45) (monitor_h*0.6)",
         center = true,
+    })
+
+    -- FL Studio (Bottles, Proton runner). Its main window opens floating
+    -- and ignores tiling, so force it to tile. Plugin windows and dialogs
+    -- have other titles and stay floating.
+    hl.window_rule({
+        match  = { class = "steam_proton", title = ".*FL Studio 20[0-9][0-9]$" },
+        tile   = true,
+        opaque = true,
     })
 
     -- Launcher and shell restart binds are in home/hypr/keybinds.lua.

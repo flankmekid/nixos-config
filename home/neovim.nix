@@ -25,6 +25,17 @@
     recursive = true;
   };
 
+  # Default C/C++ style: tabs for indentation (spaces only to align wrapped
+  # lines). clang-format looks for this in parent dirs, so it covers
+  # everything under ~ — conform, clangd and CLI clang-format alike — unless
+  # a project ships its own .clang-format.
+  home.file.".clang-format".text = ''
+    BasedOnStyle: LLVM
+    UseTab: ForIndentation
+    IndentWidth: 4
+    TabWidth: 4
+  '';
+
   home.packages = with pkgs; [
     neovim
 

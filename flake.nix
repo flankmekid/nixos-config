@@ -45,6 +45,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # An Anime Game Launcher (Genshin) and its siblings, packaged for NixOS.
+    aagl = {
+      url = "github:ezKEa/aagl-gtk-on-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Prebuilt, weekly-updated database for nix-index / command-not-found, so
     # `nix-index` never has to be run locally.
     nix-index-database = {

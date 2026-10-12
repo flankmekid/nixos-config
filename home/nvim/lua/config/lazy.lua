@@ -73,6 +73,11 @@ require("lazy").setup({
     version = false, -- always use the latest git commit
   },
 
+  -- ~/.config/nvim/lazy-lock.json is a read-only Nix store symlink, so lazy
+  -- writes straight into the repo copy instead. Plugin updates then show up
+  -- in `git diff` and get deployed on the next rebuild.
+  lockfile = vim.fn.expand("~/nixos-config/home/nvim/lazy-lock.json"),
+
   install = { colorscheme = { "catppuccin", "habamax" } },
 
   -- Check for plugin updates in the background, but don't nag.

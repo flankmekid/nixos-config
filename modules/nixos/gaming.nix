@@ -3,9 +3,17 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }:
 {
+  imports = [ inputs.aagl.nixosModules.default ];
+
+  # An Anime Game Launcher (Genshin). Pick dwproton under Settings → Wine.
+  # nixConfig adds the ezkea cachix so the launcher isn't compiled locally.
+  nix.settings = inputs.aagl.nixConfig;
+  programs.anime-game-launcher.enable = true;
+
   programs.steam = {
     enable = true;
     # Steam's UI scale comes from Xft.dpi, set in home/caelestia-hypr.nix.
@@ -87,4 +95,12 @@
 
   # Many games (and Wine) need more mmap regions than the default allows.
   boot.kernel.sysctl."vm.max_map_count" = 2147483642;
+
+  # NTSync: kernel-side NT sync primitives for Wine/Proton (select "NTSync"
+  # in the anime launcher). The module isn't autoloaded, and /dev/ntsync is
+  # root-only by default, so load it at boot and open it up to users.
+  boot.kernelModules = [ "ntsync" ];
+  services.udev.extraRules = ''
+    KERNEL=="ntsync", MODE="0666"
+  '';
 }
