@@ -19,6 +19,7 @@ return {
         "c", "cpp", "java", "c_sharp", "python", "sql", "latex", "bibtex",
         "nix", "lua", "vim", "vimdoc", "bash", "json", "yaml", "toml",
         "markdown", "markdown_inline", "dockerfile", "regex", "diff", "r",
+        "javascript", "typescript", "tsx", "jsdoc",
       },
     },
   },

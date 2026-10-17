@@ -35,6 +35,8 @@ require("lazy").setup({
     { import = "lazyvim.plugins.extras.lang.toml" },
     { import = "lazyvim.plugins.extras.lang.docker" },
     { import = "lazyvim.plugins.extras.lang.git" },
+    { import = "lazyvim.plugins.extras.lang.typescript" }, -- JS / TS / Node (vtsls + js-debug)
+    { import = "lazyvim.plugins.extras.linting.eslint" },
 
     -- ── Editor ──────────────────────────────────────────────────────────────
     { import = "lazyvim.plugins.extras.editor.telescope" },

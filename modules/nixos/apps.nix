@@ -74,7 +74,7 @@ in
     # Notes / study
     obsidian
     anki
-    zotero
+    # zotero # TEMP: 10.0.4 fails to build on current nixpkgs; re-enable later
     zathura
     qalculate-qt
     pavucontrol
@@ -84,6 +84,7 @@ in
     cmatrix
     cowsay
     qdirstat
+    litecli # SQLite client with autocomplete + syntax highlighting
 
     # Comms for online classes. Teams' native Linux client is dead, so this is
     # the PWA wrapper; it works fine for calls and screen share via portals.

@@ -205,6 +205,7 @@
     vscode-langservers-extracted # json/html/css/eslint servers
     nodejs
     typescript
+    vscode
 
     # ── General tooling
     direnv

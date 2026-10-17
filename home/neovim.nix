@@ -94,6 +94,14 @@
     markdownlint-cli2
     prettier
 
+    # ── JavaScript / TypeScript / Node
+    vtsls # TS/JS LSP used by LazyVim's typescript extra
+    # nvim-dap debugger for Node. LazyVim calls it `js-debug-adapter` (Mason's
+    # name); nixpkgs ships the same server as `js-debug`.
+    (writeShellScriptBin "js-debug-adapter" ''
+      exec ${vscode-js-debug}/bin/js-debug "$@"
+    '')
+
     # ── Shell
     bash-language-server
     shellcheck

@@ -135,7 +135,7 @@ create_bind(vars.kbWindowGroupCycleNext, hl.dsp.group.next(), repeating, "Next w
 create_bind(vars.kbWindowGroupCyclePrev, hl.dsp.group.prev(), repeating, "Previous window in group")
 create_bind(vars.kbToggleGroup, hl.dsp.group.toggle(), nil, "Toggle window group")
 create_bind(vars.kbUngroup, hl.dsp.window.move({ out_of_group = true }), nil, "Move window out of group")
-create_bind(vars.kbGroupLockActive, hl.dsp.group.lock_active(), nil, "Lock active group")
+create_bind(vars.kbGroupLockActive, hl.dsp.group.lock(), nil, "Lock active group")
 
 -- Window actions
 for _, dir in ipairs({ "left", "right", "up", "down" }) do
