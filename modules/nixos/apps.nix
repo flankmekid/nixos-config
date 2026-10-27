@@ -42,6 +42,13 @@ in
   programs.xfconf.enable = true; # Thunar saves its settings here
   services.tumbler.enable = true; # image and video thumbnails
 
+  # AppImages: binfmt lets them run directly (./foo.AppImage or double-click)
+  # instead of needing `appimage-run foo.AppImage` every time.
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+  };
+
   environment.systemPackages = with pkgs; [
     anki
     vesktop # Discord client with working Wayland screenshare

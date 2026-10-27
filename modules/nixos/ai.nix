@@ -42,7 +42,7 @@
       OLLAMA_KV_CACHE_TYPE = "q8_0";
       # Hermes Agent's minimum. qwen3.5:4b at 64k is ~4.6 GB, 100% GPU.
       # Models with a smaller native limit (qwen3:8b: 40k) get clamped to it.
-      OLLAMA_CONTEXT_LENGTH = "65536";
+      OLLAMA_CONTEXT_LENGTH = "32768";
       # Only one model in VRAM at a time; two 8B models will not fit.
       OLLAMA_MAX_LOADED_MODELS = "1";
       # Unload after 5 idle minutes so the dGPU can power down again.
@@ -53,8 +53,7 @@
     # rebuild (~7.5 GB total). Remove a line to stop tracking it; set
     # syncModels = true to also delete models not listed here.
     loadModels = [
-      "qwen3.5:4b"
-      "qwen3:8b"
+      "qwen3.5:9b-q4_K_M"
     ];
   };
 

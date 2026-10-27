@@ -56,6 +56,7 @@
     xivlauncher
     wineWow64Packages.stable # run Windows .exe files (32- and 64-bit)
     winetricks # install Windows runtimes (vcrun, dotnet, fonts) into a Wine prefix
+    yquake2
 
     # Convenience wrapper: launch Steam entirely on the dGPU. For per-game
     # control instead, put `nvidia-offload %command%` in the game's launch
@@ -80,6 +81,24 @@
       flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       flatpak install --system --noninteractive --or-update flathub org.vinegarhq.Sober org.vinegarhq.Vinegar
     '';
+  };
+
+  # Syncthing: syncs the bbhost Bloodborne save with the other PC.
+  # Web UI at http://127.0.0.1:8384. Devices and folders are added there,
+  # not here: with override* = false a rebuild won't wipe them.
+  #   Save folder: ~/.local/share/bbhost/data/saves/SPRJ0005
+  # Never run the game on both machines at once — quit, wait for
+  # "Up to Date", then play on the other one.
+  services.syncthing = {
+    enable = true;
+    user = "dawid";
+    group = "users";
+    dataDir = "/home/dawid";
+    configDir = "/home/dawid/.config/syncthing";
+    openDefaultPorts = true; # 22000/tcp+udp (sync), 21027/udp (LAN discovery)
+    overrideDevices = false;
+    overrideFolders = false;
+    settings.options.urAccepted = -1; # no usage reporting, no prompt
   };
 
   # Raise the file-descriptor limit; Proton/Wine games hit the default.
